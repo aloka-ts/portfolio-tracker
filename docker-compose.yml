@@ -1,0 +1,15 @@
+services:
+  portfolio-dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - HOST=0.0.0.0
+      - PORT=3001
+      - ASTRO_TELEMETRY_DISABLED=1

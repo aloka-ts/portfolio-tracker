@@ -1,0 +1,160 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@450;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-navy-950: #08090B; /* Deepest Midnight Base */
+  --color-navy-900: #0E1015; /* Obsidian flat dark card */
+  --color-navy-800: #171A24; /* Button / Hover state */
+  --color-accent: #FF0055;   /* Raspberry Hot Pink */
+  --color-gain: #10B981;     /* Emerald green */
+  --color-loss: #FF0055;     /* Raspberry loss */
+  --color-warning: #F59E0B;
+  
+  --color-slate-500: #64748B;
+  --color-slate-400: #94A3B8;
+  --color-slate-300: #CBD5E1;
+  
+  --font-sans: 'Inter', sans-serif;
+  --font-heading: 'Plus Jakarta Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+@layer base {
+  body {
+    background-color: #08090B;
+    color: #F8FAFC;
+    font-family: var(--font-sans);
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading) !important;
+    letter-spacing: -0.02em;
+    font-weight: 800;
+    color: #FFFFFF;
+  }
+
+  select:focus, input:focus, button:focus {
+    outline: 2px solid var(--color-accent) !important;
+    outline-offset: 1px;
+  }
+
+  .font-mono-nums {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* flat midnight card base styles */
+.cyber-card {
+  position: relative;
+  background: #0E1015;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+  border-radius: 6px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* flat dark card with raspberry accents */
+.stone-card {
+  position: relative;
+  background: #0E1015;
+  border: 1px solid rgba(255, 0, 85, 0.15);
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+  color: #F8FAFC;
+  border-radius: 6px;
+}
+
+/* Hairline Grid & Hotspot styles matching reference */
+.grid-hairline-v {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background-color: rgba(255, 255, 255, 0.025);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hotspot-plus {
+  width: 20px;
+  height: 20px;
+  border-radius: 9999px;
+  background-color: #FFFFFF;
+  color: #08090B;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+  animation: hotspotPulse 2s infinite;
+}
+
+.hotspot-plus:hover {
+  transform: scale(1.2);
+}
+
+/* Card hover glow extensions */
+.cyber-card:hover {
+  border-color: rgba(255, 0, 85, 0.3);
+  box-shadow: 0 15px 45px -12px rgba(255, 0, 85, 0.08);
+}
+
+.stone-card {
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.stone-card:hover {
+  border-color: rgba(255, 0, 85, 0.4);
+  box-shadow: 0 15px 45px -12px rgba(255, 0, 85, 0.12);
+}
+
+/* Custom Keyframe Animations */
+@keyframes stockDraw {
+  0% {
+    stroke-dashoffset: 1000;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-stock-draw {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: stockDraw 3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes slideUpFade {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-fill-mode: both;
+}
+
+@keyframes hotspotPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(255, 255, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+  }
+}

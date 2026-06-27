@@ -1,0 +1,31 @@
+{
+  "name": "portfolio-dashboard",
+  "type": "module",
+  "version": "0.0.1",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "XDG_CONFIG_HOME=./tmp ASTRO_TELEMETRY_DISABLED=1 astro dev",
+    "build": "XDG_CONFIG_HOME=./tmp ASTRO_TELEMETRY_DISABLED=1 astro build",
+    "preview": "XDG_CONFIG_HOME=./tmp ASTRO_TELEMETRY_DISABLED=1 astro preview",
+    "astro": "XDG_CONFIG_HOME=./tmp ASTRO_TELEMETRY_DISABLED=1 astro",
+    "find-pd": "node tmp/find_pd.js",
+    "test-scrape": "node tmp/test_scrape.js"
+  },
+  "dependencies": {
+    "@astrojs/react": "^5.0.7",
+    "@nanostores/react": "^1.1.0",
+    "@tailwindcss/vite": "^4.3.1",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "astro": "^6.4.7",
+    "chart.js": "^4.5.1",
+    "lucide-react": "^1.21.0",
+    "nanostores": "^1.3.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "tailwindcss": "^4.3.1",
+    "xlsx": "^0.18.5"
+  }
+}

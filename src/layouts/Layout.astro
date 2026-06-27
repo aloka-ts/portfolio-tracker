@@ -1,0 +1,58 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { 
+  title = 'Institutional Stock Tracker', 
+  description = 'A lightweight, public-facing personal stock portfolio tracker. Upload your Google Sheets / CSV files directly to view real-time data visualizations.'
+} = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    
+    <!-- OpenGraph SEO -->
+    <meta property="og:title" content={`${title} | Antigravity Portfolio`} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    
+    <title>{title} | Antigravity Portfolio</title>
+  </head>
+  <body class="text-slate-100 min-h-screen flex flex-col antialiased selection:bg-accent/30 selection:text-white relative">
+    
+    <!-- Background stock market theme & hairgrids -->
+    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+      {/* Hairline vertical grid columns */}
+      <div class="grid-hairline-v left-1/4"></div>
+      <div class="grid-hairline-v left-2/4"></div>
+      <div class="grid-hairline-v left-3/4"></div>
+
+      {/* stock line graph SVG */}
+      <svg class="absolute top-[25%] left-0 w-full h-[45%] opacity-[0.04] text-accent stroke-current" fill="none" stroke-width="2.5" viewBox="0 0 1000 400" preserveAspectRatio="none">
+        <path class="animate-stock-draw" d="M0,300 L120,270 L220,310 L350,220 L480,260 L600,160 L720,200 L850,90 L1000,130" />
+        <path class="animate-stock-draw" d="M0,300 L120,270 L220,310 L350,220 L480,260 L600,160 L720,200 L850,90 L1000,130 L1000,400 L0,400 Z" fill="url(#stock-gradient)" opacity="0.15" stroke="none" />
+        <defs>
+          <linearGradient id="stock-gradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="currentColor" />
+            <stop offset="100%" stop-color="transparent" />
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+
+    <div class="relative z-10 flex-1 flex flex-col">
+      <slot />
+    </div>
+  </body>
+</html>
