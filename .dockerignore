@@ -5,3 +5,17 @@ tmp
 .git
 .DS_Store
 *.log
+
+# environment variables & secrets
+.env
+.env.*
+
+# Editor & IDE configurations
+.vscode
+.idea
+
+# user spreadsheets
+*.csv
+*.xlsx
+*.xls
+
