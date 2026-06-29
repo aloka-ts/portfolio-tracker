@@ -1,25 +1,21 @@
-# Use Node.js LTS image as base
 FROM node:22-alpine
 
-# Set working directory
 WORKDIR /app
 
-# Copy package files
+# Install dependencies first for caching
 COPY package*.json ./
-
-# Install dependencies
 RUN npm install
 
-# Copy project files
+# Copy the rest of the application
 COPY . .
 
-# Expose the configured port (3001)
+# Expose the configured port
 EXPOSE 3001
 
-# Set host environment variable to allow connections outside the container
+# Set default environment variables
 ENV HOST=0.0.0.0
 ENV PORT=3001
 ENV ASTRO_TELEMETRY_DISABLED=1
 
-# Start Astro dev server binding to 0.0.0.0
-CMD ["npm", "run", "dev", "--", "--host"]
+# Default command runs the development server
+CMD ["npm", "run", "dev"]

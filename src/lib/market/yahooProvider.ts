@@ -55,10 +55,9 @@ export const YahooFinanceProvider: MarketDataProvider = {
       })
     );
     
-    // Fall back to Mock Provider for any failed requests (seeded symbols only)
-    const seededFallbacks = fallbacks.filter(sym => STOCK_REGISTRY[sym.trim().toUpperCase()]);
-    if (seededFallbacks.length > 0) {
-      const mockPrices = await MockMarketDataProvider.fetchPrices(seededFallbacks);
+    // Fall back to Mock Provider for any failed requests
+    if (fallbacks.length > 0) {
+      const mockPrices = await MockMarketDataProvider.fetchPrices(fallbacks);
       Object.assign(results, mockPrices);
     }
     

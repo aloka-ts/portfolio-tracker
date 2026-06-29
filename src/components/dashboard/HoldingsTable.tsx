@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useStore } from '@nanostores/react';
-import { portfolioStore, deleteHolding } from '../../stores/portfolio';
+import { portfolioStore, deleteHolding, platformFilterStore, EXCHANGE_RATE } from '../../stores/portfolio';
 import { priceStore } from '../../stores/prices';
 import { settingsStore } from '../../stores/settings';
 import { formatCurrency, formatPercent, getFinancialColorClass, resolveSymbolForDisplay } from '../../lib/utils/formatters';
@@ -27,7 +27,7 @@ export default function HoldingsTable() {
 
   // States
   const [searchQuery, setSearchQuery] = useState('');
-  const [platformFilter, setPlatformFilter] = useState('ALL');
+  const platformFilter = useStore(platformFilterStore);
   const [sortField, setSortField] = useState<SortField>('totalValue');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
@@ -109,24 +109,35 @@ export default function HoldingsTable() {
   const tableData = holdings.map(holding => {
     const symbol = holding.symbol.toUpperCase();
     const priceInfo = prices[symbol];
-    const livePrice = (priceInfo && typeof priceInfo.price === 'number') ? priceInfo.price : holding.avgCost;
+    const livePriceNative = (priceInfo && typeof priceInfo.price === 'number') ? priceInfo.price : holding.avgCost;
     const change24h = (priceInfo && typeof priceInfo.change24h === 'number') ? priceInfo.change24h : 0;
-    
+
+    // Convert native price/cost into the user's display currency (mirrors HeroStats),
+    // so the currency symbol, market value and weights are all consistent.
+    const holdingCurrency = holding.market === 'US' ? 'USD' : 'INR';
+    let fx = 1;
+    if (holdingCurrency === 'USD' && settings.currency === 'INR') fx = EXCHANGE_RATE;
+    else if (holdingCurrency === 'INR' && settings.currency === 'USD') fx = 1 / EXCHANGE_RATE;
+
+    const livePrice = livePriceNative * fx;
+    const avgCost = holding.avgCost * fx;
     const totalValue = holding.shares * livePrice;
-    const totalCost = holding.shares * holding.avgCost;
+    const totalCost = holding.shares * avgCost;
     const totalPnL = totalValue - totalCost;
     const totalPnLPercent = totalCost > 0 ? (totalPnL / totalCost) * 100 : 0;
 
     // prevClose = livePrice / (1 + change24h / 100)
-    const prevClose = livePrice / (1 + change24h / 100);
-    const dayPnL = holding.shares * (livePrice - prevClose);
-    const dayPnLPercent = prevClose > 0 ? ((livePrice - prevClose) / prevClose) * 100 : 0;
+    const prevClose = livePriceNative / (1 + change24h / 100);
+    const dayPnL = holding.shares * (livePriceNative - prevClose) * fx;
+    const dayPnLPercent = prevClose > 0 ? ((livePriceNative - prevClose) / prevClose) * 100 : 0;
 
     return {
       ...holding,
+      avgCost,
       livePrice,
       change24h,
       totalValue,
+      totalCost,
       totalPnL,
       totalPnLPercent,
       dayPnL,
@@ -212,7 +223,7 @@ export default function HoldingsTable() {
           <SlidersHorizontal size={13} className="text-cyan-500" />
           <select
             value={platformFilter}
-            onChange={(e) => setPlatformFilter(e.target.value)}
+            onChange={(e) => platformFilterStore.set(e.target.value)}
             className="bg-black/60 border border-cyan-500/30 rounded-none px-3 py-1.5 text-xs text-cyan-300 focus:outline-none focus:border-cyan-400 font-tech uppercase"
           >
             <option value="ALL">ALL CUSTODIANS</option>

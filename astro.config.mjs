@@ -7,7 +7,8 @@ import react from '@astrojs/react';
 // https://astro.build/config
 export default defineConfig({
   server: {
-    port: 3001
+    port: 3001,
+    host: true
   },
 
   vite: {

@@ -152,9 +152,9 @@ export default function AIInsights() {
   };
 
   const getBorderColorClass = (severity: AIInsight['severity']) => {
-    if (severity === 'warning') return 'border-loss/30 bg-loss/5 text-slate-200';
-    if (severity === 'success') return 'border-gain/30 bg-gain/5 text-slate-200';
-    return 'border-white/[0.08] bg-[#0E1015]/60 text-slate-200';
+    if (severity === 'warning') return 'border-loss/30 bg-loss/5 text-slate-700 dark:text-slate-200';
+    if (severity === 'success') return 'border-gain/30 bg-gain/5 text-slate-700 dark:text-slate-200';
+    return 'border-white/[0.08] bg-navy-900/60 text-slate-700 dark:text-slate-200';
   };
 
   return (

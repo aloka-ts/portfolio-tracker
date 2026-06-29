@@ -19,6 +19,26 @@ export default function Navigation() {
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [showGuideModal, setShowGuideModal] = useState(false);
   const [hasUploadedData, setHasUploadedData] = useState(false);
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const isDark = document.documentElement.classList.contains('dark');
+      setTheme(isDark ? 'dark' : 'light');
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const nextTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(nextTheme);
+    if (nextTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  };
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -153,7 +173,7 @@ export default function Navigation() {
                   <TrendingUp size={20} />
                 </div>
                 <span className="font-heading font-extrabold text-base tracking-tight text-white flex items-center space-x-1.5">
-                  <span>Antigravity</span>
+                  <span>WealthFlow</span>
                   <span className="bg-accent text-white font-semibold text-[10px] px-2 py-0.5 rounded">Portfolio</span>
                 </span>
               </a>
@@ -168,13 +188,13 @@ export default function Navigation() {
                   placeholder="Search tickers (e.g. AAPL, RELIANCE.NS)..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-[#0E1015] border border-white/[0.06] rounded-lg pl-10 pr-4 py-1.5 text-xs text-white focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent placeholder:text-stone-500"
+                  className="w-full bg-navy-900 border border-white/[0.06] rounded-lg pl-10 pr-4 py-1.5 text-xs text-white focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent placeholder:text-stone-500"
                 />
               </div>
 
               {/* Autocomplete Suggestion Box */}
               {suggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-[#0E1015] border border-white/[0.06] rounded-lg shadow-2xl z-50 overflow-hidden">
+                <div className="absolute top-full left-0 right-0 mt-1 bg-navy-900 border border-white/[0.06] rounded-lg shadow-2xl z-50 overflow-hidden">
                   {suggestions.map((sym) => (
                     <button
                       key={sym}
@@ -191,6 +211,15 @@ export default function Navigation() {
 
             {/* Right-side Preferences & Navigation */}
             <div className="flex items-center space-x-2 shrink-0">
+              {/* Theme Toggle */}
+              <button
+                onClick={toggleTheme}
+                title="Toggle Dark/Light Theme"
+                className="p-1.5 rounded-lg border border-white/[0.06] hover:bg-white/[0.04] text-stone-400 hover:text-white transition duration-150"
+              >
+                {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+              </button>
+
               {/* Colorblind visual toggle */}
               <button
                 onClick={toggleColorblind}
@@ -239,7 +268,7 @@ export default function Navigation() {
                 title="Account Settings"
                 className="flex items-center space-x-2 border-l border-white/[0.06] pl-3 cursor-pointer group"
               >
-                <div className="w-7 h-7 rounded-full bg-[#0E1015] border border-white/[0.06] flex items-center justify-center text-stone-300 group-hover:text-white group-hover:border-stone-500 font-bold text-xs transition duration-150">
+                <div className="w-7 h-7 rounded-full bg-navy-900 border border-white/[0.06] flex items-center justify-center text-stone-300 group-hover:text-white group-hover:border-stone-500 font-bold text-xs transition duration-150">
                   <User size={14} />
                 </div>
               </a>

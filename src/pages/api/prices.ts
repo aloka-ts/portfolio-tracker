@@ -2,13 +2,31 @@ import type { APIRoute } from 'astro';
 
 export const prerender = false;
 
-// Simple in-memory cache to prevent rate-limiting and speed up dashboard requests
 const priceCache: Record<string, { price: number; change24h: number; timestamp: number }> = {};
-const CACHE_TTL = 3 * 60 * 1000; // 3 minutes cache TTL
+const CACHE_TTL = 0; // Disable cache to force fresh fetches
+
+// Bare crypto tickers (e.g. BTC) must be quoted as a USD pair (BTC-USD), or the
+// scrapers resolve them to an unrelated equity and return a junk price.
+const CRYPTO_TICKERS = new Set(['BTC', 'ETH', 'USDT', 'USDC', 'BNB', 'SOL', 'XRP', 'ADA', 'DOGE', 'MATIC']);
+function isCrypto(symbol: string): boolean {
+  return CRYPTO_TICKERS.has(symbol.trim().toUpperCase());
+}
+
+function isIndianStock(symbol: string): boolean {
+  const s = symbol.toUpperCase().trim();
+  const usSymbols = new Set(['AAPL', 'TSLA', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'META', 'NFLX', 'BTC', 'ETH', 'USDT', 'USDC', 'BNB', 'SOL', 'XRP', 'ADA', 'DOGE', 'MATIC']);
+  return !usSymbols.has(s);
+}
 
 async function fetchYahooPrice(symbol: string): Promise<{ price: number; change24h: number } | null> {
   const cleanSym = symbol.trim().toUpperCase();
-  const targetUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${cleanSym}?interval=15m&range=1d`;
+  let yahooSym = isCrypto(cleanSym) ? `${cleanSym}-USD` : cleanSym;
+  
+  if (isIndianStock(cleanSym) && !yahooSym.startsWith('^') && !yahooSym.endsWith('.NS') && !yahooSym.endsWith('.BO') && !yahooSym.includes('_')) {
+    yahooSym = `${yahooSym}.NS`;
+  }
+
+  const targetUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${yahooSym}?interval=15m&range=1d`;
   
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 seconds timeout
@@ -36,8 +54,16 @@ async function fetchYahooPrice(symbol: string): Promise<{ price: number; change2
 }
 
 async function fetchGooglePrice(symbol: string): Promise<{ price: number; change24h: number } | null> {
+  // Google Finance has no reliable quote page for bare crypto tickers; let the
+  // caller fall through to Yahoo, which handles the BTC-USD pair correctly.
+  if (isCrypto(symbol)) return null;
+
   let googleSymbol = symbol.trim().toUpperCase();
-  
+
+  if (isIndianStock(googleSymbol) && !googleSymbol.startsWith('^') && !googleSymbol.includes(':') && !googleSymbol.endsWith('.NS') && !googleSymbol.endsWith('.BO') && !googleSymbol.includes('_')) {
+    googleSymbol = `${googleSymbol}:NSE`;
+  }
+
   // Map common symbols to exchange formats
   if (googleSymbol.endsWith('.NS')) {
     googleSymbol = googleSymbol.replace('.NS', ':NSE');
@@ -53,12 +79,11 @@ async function fetchGooglePrice(symbol: string): Promise<{ price: number; change
   }
 
   const targetUrl = `https://www.google.com/finance/quote/${googleSymbol}`;
-  const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 seconds timeout
 
   try {
-    const res = await fetch(proxyUrl, {
+    const res = await fetch(targetUrl, {
       signal: controller.signal,
       headers: {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'

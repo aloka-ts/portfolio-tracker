@@ -177,10 +177,9 @@ export const GoogleFinanceProvider: MarketDataProvider = {
           }
         }
     
-    // 3. Fall back to Mock Provider for any completely failed symbols (seeded symbols only)
-    const seededFallbacks = fallbacks.filter(sym => STOCK_REGISTRY[sym.trim().toUpperCase()]);
-    if (seededFallbacks.length > 0) {
-      const mockPrices = await MockMarketDataProvider.fetchPrices(seededFallbacks);
+    // 3. Fall back to Mock Provider for any completely failed symbols
+    if (fallbacks.length > 0) {
+      const mockPrices = await MockMarketDataProvider.fetchPrices(fallbacks);
       Object.assign(results, mockPrices);
     }
     

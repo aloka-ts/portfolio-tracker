@@ -13,7 +13,7 @@ const {
 ---
 
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -22,24 +22,44 @@ const {
     <meta name="generator" content={Astro.generator} />
     
     <!-- OpenGraph SEO -->
-    <meta property="og:title" content={`${title} | Antigravity Portfolio`} />
+    <meta property="og:title" content={`${title} | WealthFlow Portfolio`} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
     
-    <title>{title} | Antigravity Portfolio</title>
-  </head>
-  <body class="text-slate-100 min-h-screen flex flex-col antialiased selection:bg-accent/30 selection:text-white relative">
-    
-    <!-- Background stock market theme & hairgrids -->
-    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-      {/* Hairline vertical grid columns */}
-      <div class="grid-hairline-v left-1/4"></div>
-      <div class="grid-hairline-v left-2/4"></div>
-      <div class="grid-hairline-v left-3/4"></div>
+    <title>{title} | WealthFlow Portfolio</title>
 
-      {/* stock line graph SVG */}
-      <svg class="absolute top-[25%] left-0 w-full h-[45%] opacity-[0.04] text-accent stroke-current" fill="none" stroke-width="2.5" viewBox="0 0 1000 400" preserveAspectRatio="none">
+    <!-- Inline script to set the theme from localStorage before render to prevent flash -->
+    <script is:inline>
+      (function() {
+        const theme = localStorage.getItem('theme') || 'dark';
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body class="min-h-screen flex flex-col antialiased selection:bg-accent/30 selection:text-white relative bg-navy-950 overflow-x-hidden">
+    
+    <!-- Background visual layer (Hardware-accelerated for parallax shifting) -->
+    <div id="bg-visual-layer" class="fixed inset-0 pointer-events-none z-0 overflow-hidden" style="will-change: transform; transform: translate3d(0,0,0); backface-visibility: hidden; transition: transform 0.15s cubic-bezier(0.25, 1, 0.5, 1);">
+      <!-- 1. Hairline vertical grid columns -->
+      <div class="grid-hairline-v left-[15%]"></div>
+      <div class="grid-hairline-v left-[45%]"></div>
+      <div class="grid-hairline-v left-[75%]"></div>
+
+      <!-- 2. Ambient moving glow blobs (GPU-friendly radial gradients instead of CSS blurs) -->
+      <div class="glow-blob w-[450px] h-[450px] -top-40 -left-20" style="background: radial-gradient(circle, rgba(255, 0, 85, 0.12) 0%, transparent 70%); animation-delay: 0s;"></div>
+      <div class="glow-blob w-[500px] h-[500px] top-[40%] -right-40" style="background: radial-gradient(circle, rgba(8, 182, 212, 0.1) 0%, transparent 70%); animation-delay: -5s;"></div>
+      <div class="glow-blob w-[400px] h-[400px] -bottom-20 left-[30%]" style="background: radial-gradient(circle, rgba(95, 90, 247, 0.08) 0%, transparent 70%); animation-delay: -10s;"></div>
+
+      <!-- 3. Interactive Particle Constellation Canvas (Hardware Accelerated Layer) -->
+      <canvas id="particle-canvas" class="absolute inset-0 w-full h-full opacity-[0.20] pointer-events-none" style="will-change: transform; transform: translate3d(0,0,0); backface-visibility: hidden;"></canvas>
+
+      <!-- 4. Background Stock Path SVG -->
+      <svg class="absolute top-[25%] left-0 w-full h-[45%] opacity-[0.03] text-accent stroke-current" fill="none" stroke-width="2.5" viewBox="0 0 1000 400" preserveAspectRatio="none">
         <path class="animate-stock-draw" d="M0,300 L120,270 L220,310 L350,220 L480,260 L600,160 L720,200 L850,90 L1000,130" />
         <path class="animate-stock-draw" d="M0,300 L120,270 L220,310 L350,220 L480,260 L600,160 L720,200 L850,90 L1000,130 L1000,400 L0,400 Z" fill="url(#stock-gradient)" opacity="0.15" stroke="none" />
         <defs>
@@ -51,8 +71,221 @@ const {
       </svg>
     </div>
 
+    <!-- Main Content Container -->
     <div class="relative z-10 flex-1 flex flex-col">
       <slot />
     </div>
+
+    <!-- Particle Constellation and Spotlight Card listener scripts -->
+    <script>
+      // 1. Interactive Particle Constellation
+      function initParticles() {
+        const canvas = document.getElementById('particle-canvas') as HTMLCanvasElement;
+        if (!canvas) return;
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        let animationFrameId: number;
+        let width = (canvas.width = window.innerWidth);
+        let height = (canvas.height = window.innerHeight);
+
+        const particles: Particle[] = [];
+        const maxParticles = Math.min(45, Math.floor((width * height) / 32000));
+        const connectionDist = 100;
+        const limitSq = connectionDist * connectionDist;
+
+        let mouse = { x: null as number | null, y: null as number | null, radius: 120 };
+
+        class Particle {
+          x: number;
+          y: number;
+          vx: number;
+          vy: number;
+          radius: number;
+
+          constructor() {
+            this.x = Math.random() * width;
+            this.y = Math.random() * height;
+            this.vx = (Math.random() - 0.5) * 0.35;
+            this.vy = (Math.random() - 0.5) * 0.35;
+            this.radius = Math.random() * 1.2 + 0.8;
+          }
+
+          update() {
+            this.x += this.vx;
+            this.y += this.vy;
+
+            if (this.x < 0 || this.x > width) this.vx *= -1;
+            if (this.y < 0 || this.y > height) this.vy *= -1;
+
+            // React to mouse (only if close)
+            if (mouse.x !== null && mouse.y !== null) {
+              const dx = this.x - mouse.x;
+              const dy = this.y - mouse.y;
+              const distSq = dx * dx + dy * dy;
+              const mRadiusSq = mouse.radius * mouse.radius;
+              if (distSq < mRadiusSq) {
+                const dist = Math.sqrt(distSq);
+                const force = (mouse.radius - dist) / mouse.radius;
+                this.x += (dx / dist) * force * 1.2;
+                this.y += (dy / dist) * force * 1.2;
+              }
+            }
+          }
+
+          draw() {
+            if (!ctx) return;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255, 0, 85, 0.3)';
+            ctx.fill();
+          }
+        }
+
+        // Initialize particle array
+        for (let i = 0; i < maxParticles; i++) {
+          particles.push(new Particle());
+        }
+
+        function animate() {
+          if (!ctx || !canvas) return;
+          ctx.clearRect(0, 0, width, height);
+
+          // Draw particles
+          particles.forEach((p) => {
+            p.update();
+            p.draw();
+          });
+
+          // Draw connecting lines (Optimized with squared distance check)
+          for (let i = 0; i < particles.length; i++) {
+            for (let j = i + 1; j < particles.length; j++) {
+              const dx = particles[i].x - particles[j].x;
+              const dy = particles[i].y - particles[j].y;
+              const distSq = dx * dx + dy * dy;
+
+              if (distSq < limitSq) {
+                const dist = Math.sqrt(distSq);
+                const alpha = (1 - dist / connectionDist) * 0.12;
+                ctx.beginPath();
+                ctx.moveTo(particles[i].x, particles[i].y);
+                ctx.lineTo(particles[j].x, particles[j].y);
+                ctx.strokeStyle = `rgba(95, 90, 247, ${alpha})`;
+                ctx.lineWidth = 0.6;
+                ctx.stroke();
+              }
+            }
+          }
+
+          animationFrameId = requestAnimationFrame(animate);
+        }
+
+        // Event Listeners
+        const handleMouseMove = (e: MouseEvent) => {
+          mouse.x = e.clientX;
+          mouse.y = e.clientY;
+        };
+
+        const handleMouseLeave = () => {
+          mouse.x = null;
+          mouse.y = null;
+        };
+
+        const handleResize = () => {
+          width = canvas.width = window.innerWidth;
+          height = canvas.height = window.innerHeight;
+        };
+
+        window.addEventListener('mousemove', handleMouseMove);
+        window.addEventListener('mouseleave', handleMouseLeave);
+        window.addEventListener('resize', handleResize);
+
+        animate();
+
+        return () => {
+          cancelAnimationFrame(animationFrameId);
+          window.removeEventListener('mousemove', handleMouseMove);
+          window.removeEventListener('mouseleave', handleMouseLeave);
+          window.removeEventListener('resize', handleResize);
+        };
+      }
+
+      // 2. Spotlight Card Mouse Move Handler (Optimized Event Delegation with 3D Perspective Tilt)
+      function initSpotlightCards() {
+        const handleMouseOver = (e: MouseEvent) => {
+          const card = (e.target as HTMLElement).closest('.glow-card') as HTMLElement;
+          if (card && !card.dataset.hasSpotlight) {
+            card.dataset.hasSpotlight = 'true';
+            
+            const handleMouseMove = (innerEvent: MouseEvent) => {
+              const rect = card.getBoundingClientRect();
+              const x = innerEvent.clientX - rect.left;
+              const y = innerEvent.clientY - rect.top;
+              
+              // 1. Update Spotlight glow position
+              card.style.setProperty('--mouse-x', `${x}px`);
+              card.style.setProperty('--mouse-y', `${y}px`);
+              
+              // 2. 3D Tilt calculations
+              const cardWidth = rect.width;
+              const cardHeight = rect.height;
+              const centerX = rect.left + cardWidth / 2;
+              const centerY = rect.top + cardHeight / 2;
+              const mouseX = innerEvent.clientX - centerX;
+              const mouseY = innerEvent.clientY - centerY;
+              
+              // Tilt max 6 degrees for tactile 3D effect
+              const rotateX = -(mouseY / (cardHeight / 2)) * 6;
+              const rotateY = (mouseX / (cardWidth / 2)) * 6;
+              
+              card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.015, 1.015, 1.015)`;
+            };
+            
+            card.addEventListener('mousemove', handleMouseMove);
+            card.addEventListener('mouseleave', () => {
+              card.removeEventListener('mousemove', handleMouseMove);
+              card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
+              delete card.dataset.hasSpotlight;
+            }, { once: true });
+          }
+        };
+        document.addEventListener('mouseover', handleMouseOver);
+        return () => {
+          document.removeEventListener('mouseover', handleMouseOver);
+        };
+      }
+
+      // 3. Background Mouse Parallax Effect (Widescreen Depth)
+      function initBackgroundParallax() {
+        const bgLayer = document.getElementById('bg-visual-layer');
+        if (!bgLayer) return;
+
+        const handleMouseMove = (e: MouseEvent) => {
+          const x = (e.clientX - window.innerWidth / 2) * -0.008;
+          const y = (e.clientY - window.innerHeight / 2) * -0.008;
+          bgLayer.style.transform = `translate3d(${x}px, ${y}px, 0) scale(1.01)`;
+        };
+
+        window.addEventListener('mousemove', handleMouseMove);
+        return () => {
+          window.removeEventListener('mousemove', handleMouseMove);
+        };
+      }
+
+      // Initialize on load and on page swap
+      let cleanParticles = initParticles();
+      let cleanSpotlight = initSpotlightCards();
+      let cleanParallax = initBackgroundParallax();
+
+      document.addEventListener('astro:after-swap', () => {
+        if (cleanParticles) cleanParticles();
+        if (cleanSpotlight) cleanSpotlight();
+        if (cleanParallax) cleanParallax();
+        cleanParticles = initParticles();
+        cleanSpotlight = initSpotlightCards();
+        cleanParallax = initBackgroundParallax();
+      });
+    </script>
   </body>
 </html>

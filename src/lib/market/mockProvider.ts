@@ -29,11 +29,6 @@ const dynamicRegistry: Record<string, { name: string; basePrice: number; openPri
 function getStockInfo(symbol: string): { name: string; price: number; openPrice: number; sparkline: number[] } | null {
   const cleanSym = symbol.trim().toUpperCase();
   
-  // Mutual funds never get mock prices
-  if (cleanSym.includes('_')) {
-    return null;
-  }
-  
   // 1. Check pre-seeded registry
   if (STOCK_REGISTRY[cleanSym]) {
     const info = STOCK_REGISTRY[cleanSym];
@@ -97,56 +92,7 @@ function getStockInfo(symbol: string): { name: string; price: number; openPrice:
   };
 }
 
-function isMarketOpen(symbol: string): boolean {
-  const cleanSym = symbol.trim().toUpperCase();
-  
-  // Mutual funds never fluctuate in real-time
-  if (cleanSym.includes('_')) {
-    return false;
-  }
-  
-  const isIndian = cleanSym.endsWith('.NS') || cleanSym.endsWith('.BO');
-  
-  const tz = isIndian ? 'Asia/Kolkata' : 'America/New_York';
-  const formatStr = new Intl.DateTimeFormat('en-US', {
-    timeZone: tz,
-    hour12: false,
-    weekday: 'short',
-    hour: 'numeric',
-    minute: 'numeric',
-  });
-  
-  try {
-    const formatted = formatStr.format(new Date());
-    const match = formatted.match(/([a-zA-Z]+),?\s+([0-9]+):([0-9]+)/);
-    if (!match) return true;
-    
-    const [, day, hourStr, minStr] = match;
-    const hour = parseInt(hourStr, 10);
-    const min = parseInt(minStr, 10);
-    
-    const dayPrefix = day.substring(0, 3);
-    if (dayPrefix === 'Sat' || dayPrefix === 'Sun') {
-      return false;
-    }
-    
-    const timeInMinutes = hour * 60 + min;
-    
-    if (isIndian) {
-      // NSE/BSE: Mon-Fri, 9:15 AM - 3:30 PM (555 to 930 mins)
-      const openTime = 9 * 60 + 15;
-      const closeTime = 15 * 60 + 30;
-      return timeInMinutes >= openTime && timeInMinutes <= closeTime;
-    } else {
-      // US Markets: Mon-Fri, 9:30 AM - 4:00 PM (570 to 960 mins)
-      const openTime = 9 * 60 + 30;
-      const closeTime = 16 * 60 + 0;
-      return timeInMinutes >= openTime && timeInMinutes <= closeTime;
-    }
-  } catch (e) {
-    return true; // fallback to open if formatter errors out
-  }
-}
+
 
 export const MockMarketDataProvider: MarketDataProvider = {
   id: 'mock',
@@ -183,11 +129,6 @@ export const MockMarketDataProvider: MarketDataProvider = {
       
       symbols.forEach(sym => {
         const cleanSym = sym.trim().toUpperCase();
-        
-        // Gate: only fluctuate if market is open!
-        if (!isMarketOpen(cleanSym)) {
-          return;
-        }
         
         const registryInfo = dynamicRegistry[cleanSym];
         if (registryInfo) {

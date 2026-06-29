@@ -5,6 +5,8 @@ export interface Holding {
   platform: string;
   dateAcquired?: string;
   companyName?: string;
+  market?: 'US' | 'IN';
+  category?: string;
 }
 
 export interface PriceTick {
@@ -39,3 +41,19 @@ export interface PlatformStat {
   topHoldingSymbol: string;
   topHoldingValue: number;
 }
+
+export interface Transaction {
+  id: string;
+  ticker: string;
+  type: 'BUY' | 'SELL';
+  quantity: number;
+  price: number;
+  fees: number;
+  date: string;
+  market: 'US' | 'IN';
+  platform: string;
+  category?: string;
+  notes?: string;
+}
+
+

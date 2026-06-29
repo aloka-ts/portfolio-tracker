@@ -1,13 +1,27 @@
 import { atom } from 'nanostores';
 import type { PriceTick } from '../types';
-import { portfolioStore } from './portfolio';
 import { settingsStore } from './settings';
 import { MockMarketDataProvider } from '../lib/market/mockProvider';
 import { YahooFinanceProvider } from '../lib/market/yahooProvider';
 import { GoogleFinanceProvider } from '../lib/market/googleProvider';
 
-// Price ticks registry
-export const priceStore = atom<Record<string, PriceTick>>({});
+// Helper to load cached prices
+const loadCachedPrices = (): Record<string, PriceTick> => {
+  if (typeof window !== 'undefined') {
+    try {
+      const cached = localStorage.getItem('cached_prices');
+      if (cached) {
+        return JSON.parse(cached);
+      }
+    } catch (e) {
+      console.error('Failed to load cached prices', e);
+    }
+  }
+  return {};
+};
+
+// Price ticks registry initialized with cache
+export const priceStore = atom<Record<string, PriceTick>>(loadCachedPrices());
 // Metadata stores
 export const lastUpdatedStore = atom<Date | null>(null);
 export const isPollingStore = atom<boolean>(false);
@@ -23,7 +37,7 @@ function getProvider(providerId: string) {
   return MockMarketDataProvider;
 }
 
-export function startPriceSubscription() {
+export function startPriceSubscription(portfolioStore: any) {
   if (typeof window === 'undefined') return;
 
   const runSubscription = () => {
@@ -69,6 +83,15 @@ export function startPriceSubscription() {
         
         priceStore.set(currentPrices);
         lastUpdatedStore.set(new Date());
+        
+        // Save to cache
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem('cached_prices', JSON.stringify(currentPrices));
+          } catch (e) {
+            console.error('Failed to cache prices', e);
+          }
+        }
       },
       intervalMs
     );
