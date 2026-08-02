@@ -114,7 +114,8 @@ export interface CashBalances {
   INR: number;
 }
 
-export const cashBalancesStore = atom<CashBalances>({ USD: 50000, INR: 1000000 });
+// Recalculated from transactions on init; seed demo gets demo cash there
+export const cashBalancesStore = atom<CashBalances>({ USD: 0, INR: 0 });
 
 // Save transactions to localStorage
 function saveTransactions(txs: Transaction[]) {
@@ -145,9 +146,13 @@ export function recalculatePortfolio(txs: Transaction[]) {
   // Sort chronologically for accurate cost basis
   const sortedTxs = [...txs].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-  // Initialize cash
-  let cashUSD = 50000;
-  let cashINR = 1000000;
+  // Demo cash exists only for the bundled seed portfolio. Real imported data
+  // starts at zero: buys are externally funded (no deposit records exist to
+  // draw from), while sells and dividends accrue into cash.
+  // ponytail: no deposit-transaction type yet; add one if users need full cash tracking
+  const isSeed = sortedTxs.some(tx => tx.id.startsWith('tx-seed-'));
+  let cashUSD = isSeed ? 50000 : 0;
+  let cashINR = isSeed ? 1000000 : 0;
 
   const currentPrices = { ...priceStore.get() };
   let pricesChanged = false;
@@ -158,12 +163,16 @@ export function recalculatePortfolio(txs: Transaction[]) {
     const totalAmount = tx.quantity * tx.price;
     const isUS = tx.market === 'US';
 
-    // 1. Adjust Cash Balances
+    // 1. Adjust Cash Balances (SELL and DIVIDEND are both cash inflows;
+    // DIVIDEND never touches shares/cost basis below). Buys only draw from
+    // cash in the seed demo — imported portfolios have no deposit history.
     if (tx.type === 'BUY') {
-      if (isUS) {
-        cashUSD -= (totalAmount + tx.fees);
-      } else {
-        cashINR -= (totalAmount + tx.fees);
+      if (isSeed) {
+        if (isUS) {
+          cashUSD -= (totalAmount + tx.fees);
+        } else {
+          cashINR -= (totalAmount + tx.fees);
+        }
       }
     } else {
       if (isUS) {

@@ -4,6 +4,7 @@ import { portfolioStore } from '../../stores/portfolio';
 import { priceStore } from '../../stores/prices';
 import { settingsStore } from '../../stores/settings';
 import { formatCurrency } from '../../lib/utils/formatters';
+import { getChartPalette, getCssVar, themeTickStore } from '../../lib/theme';
 import { AlertTriangle, PieChart, BarChart2, LineChart } from 'lucide-react';
 import Chart from 'chart.js/auto';
 
@@ -11,6 +12,7 @@ export default function AllocationCharts() {
   const holdings = useStore(portfolioStore);
   const prices = useStore(priceStore);
   const settings = useStore(settingsStore);
+  const themeTick = useStore(themeTickStore);
 
   const doughnutRef = useRef<HTMLCanvasElement | null>(null);
   const barRef = useRef<HTMLCanvasElement | null>(null);
@@ -55,24 +57,8 @@ export default function AllocationCharts() {
     setHighRiskHoldings(risky);
   }, [holdings, prices]);
 
-  // Color Palette Definitions (Raspberry & Midnight Palette)
-  const colors = settings.colorblind ? [
-    '#0284C7', // Sky Blue
-    '#F59E0B', // Amber Gold
-    '#3B82F6', // Blue
-    '#EF4444', // Red
-    '#8B5CF6', // Purple
-    '#EC4899', // Pink
-    '#10B981'  // Green
-  ] : [
-    '#FF0055', // Raspberry Hot Pink
-    '#1E293B', // Slate Charcoal
-    '#475569', // Muted Slate
-    '#64748B', // Soft Gray
-    '#0EA5E9', // Sky Blue
-    '#10B981', // Emerald Green
-    '#F59E0B'  // Amber
-  ];
+  // Theme-aware chart palette from --chart-N tokens (see global.css)
+  const colors = getChartPalette(settings.colorblind);
 
   // Instantiation of Charts
   useEffect(() => {
@@ -90,7 +76,7 @@ export default function AllocationCharts() {
             datasets: [{
               data: platformValues,
               backgroundColor: colors.slice(0, platformLabels.length),
-              borderColor: '#0D111C',
+              borderColor: getCssVar('--bg-card', '#0D111C'),
               borderWidth: 2,
               hoverOffset: 4
             }]
@@ -102,7 +88,7 @@ export default function AllocationCharts() {
               legend: {
                 position: 'bottom',
                 labels: {
-                  color: '#94A3B8',
+                  color: getCssVar('--text-muted', '#94A3B8'),
                   font: { family: 'Inter', size: 10 },
                   padding: 15
                 }
@@ -161,12 +147,12 @@ export default function AllocationCharts() {
             scales: {
               x: {
                 grid: { color: 'rgba(255, 255, 255, 0.04)' },
-                ticks: { color: '#94A3B8', font: { family: 'Inter', size: 9 } },
+                ticks: { color: getCssVar('--text-muted', '#94A3B8'), font: { family: 'Inter', size: 9 } },
                 max: 100
               },
               y: {
                 grid: { display: false },
-                ticks: { color: '#ffffff', font: { family: 'Inter', size: 10 } }
+                ticks: { color: getCssVar('--text-main', '#ffffff'), font: { family: 'Inter', size: 10 } }
               }
             }
           }
@@ -222,18 +208,18 @@ export default function AllocationCharts() {
             scales: {
               x: {
                 grid: { display: false },
-                ticks: { color: '#94A3B8', font: { family: 'Inter', size: 9 } }
+                ticks: { color: getCssVar('--text-muted', '#94A3B8'), font: { family: 'Inter', size: 9 } }
               },
               y: {
                 grid: { color: 'rgba(255, 255, 255, 0.04)' },
-                ticks: { color: '#94A3B8', font: { family: 'Inter', size: 9 } }
+                ticks: { color: getCssVar('--text-muted', '#94A3B8'), font: { family: 'Inter', size: 9 } }
               }
             }
           }
         });
       }
     }
-  }, [holdings, prices, activeTab, settings.colorblind]);
+  }, [holdings, prices, activeTab, settings.colorblind, themeTick]);
 
   return (
     <div className="cyber-card p-4 md:p-5 shadow-lg flex flex-col justify-between h-[360px]">

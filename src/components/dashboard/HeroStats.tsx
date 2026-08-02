@@ -135,7 +135,7 @@ import React from 'react';
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 w-full">
       {/* 1. Total Invested Value */}
-      <div className="cyber-card glow-card p-4 md:p-5 flex flex-col justify-between overflow-hidden group">
+      <div className="cyber-card glow-card hover-scale p-4 md:p-5 flex flex-col justify-between overflow-hidden group">
         <div className="glow-card-inner h-full flex flex-col justify-between">
           <div className="space-y-1">
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Total Invested</span>
@@ -152,7 +152,7 @@ import React from 'react';
       </div>
 
       {/* 2. Present Value - High Contrast Stone Panel */}
-      <div className="stone-card glow-card p-4 md:p-5 flex flex-col justify-between overflow-hidden group">
+      <div className="stone-card glow-card hover-scale p-4 md:p-5 flex flex-col justify-between overflow-hidden group">
         {/* Background sparkline curve */}
         <div className="absolute right-0 bottom-0 opacity-20 group-hover:opacity-30 transition pointer-events-none">
           <svg width="120" height="40" className="overflow-visible">
@@ -185,7 +185,7 @@ import React from 'react';
       </div>
 
       {/* 3. Total Return (Total P&L & Total P&L %) */}
-      <div className="cyber-card glow-card p-4 md:p-5 flex flex-col justify-between overflow-hidden group">
+      <div className="cyber-card glow-card hover-scale p-4 md:p-5 flex flex-col justify-between overflow-hidden group">
         <div className="glow-card-inner h-full flex flex-col justify-between">
           <div className="space-y-1">
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Total Return</span>
@@ -208,7 +208,7 @@ import React from 'react';
       </div>
 
       {/* 4. Day's P&L & Day's P&L % */}
-      <div className="cyber-card glow-card p-4 md:p-5 flex flex-col justify-between overflow-hidden group">
+      <div className="cyber-card glow-card hover-scale p-4 md:p-5 flex flex-col justify-between overflow-hidden group">
         <div className="glow-card-inner h-full flex flex-col justify-between">
           <div className="space-y-1">
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Day's Return</span>

@@ -12,7 +12,7 @@ import {
   FileCheck
 } from 'lucide-react';
 import { parseSheetFile, mapRowsToHoldings, TARGET_FIELDS } from '../../lib/parsing/sheetParser';
-import { importHoldings, portfolioStore, MOCK_HOLDINGS } from '../../stores/portfolio';
+import { importHoldings, importTransactions, portfolioStore, SEED_TRANSACTIONS } from '../../stores/portfolio';
 import type { Holding } from '../../types';
 
 export default function OnboardingWizard() {
@@ -113,8 +113,9 @@ export default function OnboardingWizard() {
   };
 
   const loadDemoData = () => {
-    // Explicitly import pre-seeded holdings to local storage
-    importHoldings(MOCK_HOLDINGS, 'overwrite');
+    // Seed the demo portfolio (same path as the dashboard's Load Sample Data)
+    importHoldings([], 'overwrite');
+    importTransactions(SEED_TRANSACTIONS, 'overwrite');
     window.location.href = '/dashboard';
   };
 

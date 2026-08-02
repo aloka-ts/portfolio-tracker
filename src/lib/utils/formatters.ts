@@ -1,4 +1,5 @@
 import type { UserSettings } from '../../types';
+import { settingsStore } from '../../stores/settings';
 
 // Map currency codes to symbols and locales
 const CURRENCY_CONFIGS = {
@@ -9,7 +10,9 @@ const CURRENCY_CONFIGS = {
 };
 
 /**
- * Format a number into currency representation
+ * Format a number into currency representation.
+ * When privacy mode is on, masks the amount (all callers subscribe to
+ * settingsStore, so toggling re-renders every money value in one place).
  */
 export function formatCurrency(
   value: number,
@@ -17,6 +20,9 @@ export function formatCurrency(
   decimals: number = 2
 ): string {
   const config = CURRENCY_CONFIGS[currency] || CURRENCY_CONFIGS.USD;
+  if (settingsStore.get().privacyMode) {
+    return `${config.symbol}••••••`;
+  }
   try {
     return new Intl.NumberFormat(config.locale, {
       style: 'currency',

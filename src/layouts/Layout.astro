@@ -13,7 +13,7 @@ const {
 ---
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="theme-transition">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -28,37 +28,32 @@ const {
     <meta name="twitter:card" content="summary_large_image" />
     
     <title>{title} | WealthFlow Portfolio</title>
-
+ 
     <!-- Inline script to set the theme from localStorage before render to prevent flash -->
+    <!-- Resolve logic duplicated in src/lib/theme.ts — keep in sync -->
     <script is:inline>
-      (function() {
-        const theme = localStorage.getItem('theme') || 'dark';
-        if (theme === 'dark') {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
-      })();
+      document.documentElement.classList.toggle('dark', localStorage.getItem('theme') !== 'light');
     </script>
   </head>
-  <body class="min-h-screen flex flex-col antialiased selection:bg-accent/30 selection:text-white relative bg-navy-950 overflow-x-hidden">
+  <body class="theme-transition min-h-screen flex flex-col antialiased selection:bg-accent/30 selection:text-white relative bg-navy-950 overflow-x-hidden">
     
     <!-- Background visual layer (Hardware-accelerated for parallax shifting) -->
     <div id="bg-visual-layer" class="fixed inset-0 pointer-events-none z-0 overflow-hidden" style="will-change: transform; transform: translate3d(0,0,0); backface-visibility: hidden; transition: transform 0.15s cubic-bezier(0.25, 1, 0.5, 1);">
-      <!-- 1. Hairline vertical grid columns -->
-      <div class="grid-hairline-v left-[15%]"></div>
-      <div class="grid-hairline-v left-[45%]"></div>
-      <div class="grid-hairline-v left-[75%]"></div>
+      <!-- 1. Fine grid pattern fading in from the top -->
+      <div class="bg-grid-pattern absolute inset-0"></div>
 
-      <!-- 2. Ambient moving glow blobs (GPU-friendly radial gradients instead of CSS blurs) -->
-      <div class="glow-blob w-[450px] h-[450px] -top-40 -left-20" style="background: radial-gradient(circle, rgba(255, 0, 85, 0.12) 0%, transparent 70%); animation-delay: 0s;"></div>
-      <div class="glow-blob w-[500px] h-[500px] top-[40%] -right-40" style="background: radial-gradient(circle, rgba(8, 182, 212, 0.1) 0%, transparent 70%); animation-delay: -5s;"></div>
-      <div class="glow-blob w-[400px] h-[400px] -bottom-20 left-[30%]" style="background: radial-gradient(circle, rgba(95, 90, 247, 0.08) 0%, transparent 70%); animation-delay: -10s;"></div>
+      <!-- 2. Top horizon aurora glow behind the nav -->
+      <div class="aurora-glow w-[1000px] h-[520px] -top-72 left-1/2" style="background: radial-gradient(ellipse at center, var(--aurora-1) 0%, transparent 65%);"></div>
 
-      <!-- 3. Interactive Particle Constellation Canvas (Hardware Accelerated Layer) -->
+      <!-- 3. Ambient moving glow blobs (GPU-friendly radial gradients, theme-aware) -->
+      <div class="glow-blob w-[500px] h-[500px] -top-40 -left-24" style="background: radial-gradient(circle, var(--aurora-1) 0%, transparent 70%); animation-delay: 0s;"></div>
+      <div class="glow-blob w-[550px] h-[550px] top-[38%] -right-40" style="background: radial-gradient(circle, var(--aurora-3) 0%, transparent 70%); animation-delay: -7s;"></div>
+      <div class="glow-blob w-[460px] h-[460px] -bottom-24 left-[28%]" style="background: radial-gradient(circle, var(--aurora-2) 0%, transparent 70%); animation-delay: -13s;"></div>
+
+      <!-- 4. Interactive Particle Constellation Canvas (Hardware Accelerated Layer) -->
       <canvas id="particle-canvas" class="absolute inset-0 w-full h-full opacity-[0.20] pointer-events-none" style="will-change: transform; transform: translate3d(0,0,0); backface-visibility: hidden;"></canvas>
 
-      <!-- 4. Background Stock Path SVG -->
+      <!-- 5. Background Stock Path SVG -->
       <svg class="absolute top-[25%] left-0 w-full h-[45%] opacity-[0.03] text-accent stroke-current" fill="none" stroke-width="2.5" viewBox="0 0 1000 400" preserveAspectRatio="none">
         <path class="animate-stock-draw" d="M0,300 L120,270 L220,310 L350,220 L480,260 L600,160 L720,200 L850,90 L1000,130" />
         <path class="animate-stock-draw" d="M0,300 L120,270 L220,310 L350,220 L480,260 L600,160 L720,200 L850,90 L1000,130 L1000,400 L0,400 Z" fill="url(#stock-gradient)" opacity="0.15" stroke="none" />
@@ -69,6 +64,9 @@ const {
           </linearGradient>
         </defs>
       </svg>
+
+      <!-- 6. Edge vignette for depth (dark mode only) -->
+      <div class="bg-vignette absolute inset-0"></div>
     </div>
 
     <!-- Main Content Container -->
@@ -78,8 +76,12 @@ const {
 
     <!-- Particle Constellation and Spotlight Card listener scripts -->
     <script>
+      const prefersReducedMotion = () =>
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
       // 1. Interactive Particle Constellation
       function initParticles() {
+        if (prefersReducedMotion()) return;
         const canvas = document.getElementById('particle-canvas') as HTMLCanvasElement;
         if (!canvas) return;
 
@@ -213,6 +215,7 @@ const {
 
       // 2. Spotlight Card Mouse Move Handler (Optimized Event Delegation with 3D Perspective Tilt)
       function initSpotlightCards() {
+        if (prefersReducedMotion()) return;
         const handleMouseOver = (e: MouseEvent) => {
           const card = (e.target as HTMLElement).closest('.glow-card') as HTMLElement;
           if (card && !card.dataset.hasSpotlight) {
@@ -258,6 +261,7 @@ const {
 
       // 3. Background Mouse Parallax Effect (Widescreen Depth)
       function initBackgroundParallax() {
+        if (prefersReducedMotion()) return;
         const bgLayer = document.getElementById('bg-visual-layer');
         if (!bgLayer) return;
 

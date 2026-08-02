@@ -1,11 +1,196 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useStore } from '@nanostores/react';
 import { portfolioStore, transactionsStore, EXCHANGE_RATE } from '../../stores/portfolio';
 import { priceStore } from '../../stores/prices';
 import { settingsStore } from '../../stores/settings';
 import { formatCurrency, formatPercent } from '../../lib/utils/formatters';
-import { FlaskConical, Plus, Trash2, ArrowUpRight, ArrowDownRight, Sparkles } from 'lucide-react';
+import { getCssVar } from '../../lib/theme';
+import { FlaskConical, Plus, Trash2, ArrowUpRight, ArrowDownRight, Sparkles, Target } from 'lucide-react';
 import Chart from 'chart.js/auto';
+import type { UserSettings } from '../../types';
+
+// Goal / save-up planner: projects the (simulated) portfolio value forward
+// with monthly contributions and compound growth until it crosses the target.
+function GoalPlanner({ startValue, settings }: { startValue: number; settings: UserSettings }) {
+  const [target, setTarget] = useState('');
+  const [monthly, setMonthly] = useState('');
+  const [annualReturn, setAnnualReturn] = useState('10');
+  const chartRef = useRef<HTMLCanvasElement | null>(null);
+
+  const targetVal = Number(target) || 0;
+  const monthlyVal = Number(monthly) || 0;
+  const monthlyRate = (Number(annualReturn) || 0) / 100 / 12;
+
+  // Iterate month-by-month, cap at 50 years
+  let monthsToTarget: number | null = null;
+  const series: number[] = [startValue];
+  if (targetVal > startValue && (monthlyVal > 0 || monthlyRate > 0)) {
+    let v = startValue;
+    for (let m = 1; m <= 600; m++) {
+      v = v * (1 + monthlyRate) + monthlyVal;
+      series.push(v);
+      if (v >= targetVal) {
+        monthsToTarget = m;
+        break;
+      }
+    }
+  }
+
+  const reachDate = (() => {
+    if (monthsToTarget === null) return null;
+    const d = new Date();
+    d.setMonth(d.getMonth() + monthsToTarget);
+    return d;
+  })();
+
+  const alreadyReached = targetVal > 0 && targetVal <= startValue;
+  const unreachable = targetVal > startValue && monthsToTarget === null && (monthlyVal > 0 || monthlyRate > 0);
+
+  useEffect(() => {
+    if (!chartRef.current) return;
+    const existing = Chart.getChart(chartRef.current);
+    if (existing) existing.destroy();
+    if (series.length < 2 || monthsToTarget === null) return;
+
+    const ctx = chartRef.current.getContext('2d');
+    if (!ctx) return;
+
+    const labels = series.map((_, i) => {
+      const d = new Date();
+      d.setMonth(d.getMonth() + i);
+      return d.toLocaleDateString(undefined, { month: 'short', year: '2-digit' });
+    });
+
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Projected Value',
+            data: series,
+            borderColor: '#FF0055',
+            backgroundColor: 'rgba(255, 0, 85, 0.05)',
+            borderWidth: 2,
+            pointRadius: 0,
+            pointHitRadius: 8,
+            fill: true,
+            tension: 0.2,
+          },
+          {
+            label: 'Target',
+            data: series.map(() => targetVal),
+            borderColor: getCssVar('--text-muted', '#94A3B8'),
+            borderWidth: 1.5,
+            borderDash: [5, 4],
+            pointRadius: 0,
+            fill: false,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (context: any) =>
+                `${context.dataset.label}: ${formatCurrency(context.parsed.y, settings.currency, 0)}`,
+            },
+          },
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: {
+              color: getCssVar('--text-muted', '#94A3B8'),
+              font: { size: 9 },
+              maxTicksLimit: 8,
+              maxRotation: 0,
+            },
+          },
+          y: {
+            grid: { color: 'rgba(148, 163, 184, 0.08)' },
+            ticks: { color: getCssVar('--text-muted', '#94A3B8'), font: { size: 9 } },
+          },
+        },
+      },
+    });
+  }, [target, monthly, annualReturn, startValue]);
+
+  return (
+    <div className="cyber-card p-5 space-y-4">
+      <span className="text-xs font-bold text-white uppercase tracking-wider border-b border-white/[0.04] pb-2.5 flex items-center gap-1.5">
+        <Target size={14} className="text-accent" />
+        <span>[ Goal / Save-Up Planner ]</span>
+      </span>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+        <div className="space-y-1">
+          <label className="text-[9px] uppercase font-bold text-slate-400">Target Amount ({settings.currency})</label>
+          <input
+            type="number"
+            min="0"
+            placeholder={`e.g. ${Math.round(startValue * 2)}`}
+            value={target}
+            onChange={(e) => setTarget(e.target.value)}
+            className="w-full bg-navy-900 border border-white/[0.06] rounded-lg p-2 text-slate-800 dark:text-white focus:outline-none focus:border-accent placeholder:text-slate-600"
+          />
+        </div>
+        <div className="space-y-1">
+          <label className="text-[9px] uppercase font-bold text-slate-400">Monthly Contribution ({settings.currency})</label>
+          <input
+            type="number"
+            min="0"
+            placeholder="e.g. 25000"
+            value={monthly}
+            onChange={(e) => setMonthly(e.target.value)}
+            className="w-full bg-navy-900 border border-white/[0.06] rounded-lg p-2 text-slate-800 dark:text-white focus:outline-none focus:border-accent placeholder:text-slate-600"
+          />
+        </div>
+        <div className="space-y-1">
+          <label className="text-[9px] uppercase font-bold text-slate-400">Expected Annual Return (%)</label>
+          <input
+            type="number"
+            step="0.5"
+            value={annualReturn}
+            onChange={(e) => setAnnualReturn(e.target.value)}
+            className="w-full bg-navy-900 border border-white/[0.06] rounded-lg p-2 text-slate-800 dark:text-white focus:outline-none focus:border-accent"
+          />
+        </div>
+      </div>
+
+      {alreadyReached && (
+        <div className="p-2.5 bg-gain/5 border border-gain/20 text-gain text-[10px] rounded-lg">
+          Target already reached — your simulated portfolio is worth {formatCurrency(startValue, settings.currency, 0)}.
+        </div>
+      )}
+      {unreachable && (
+        <div className="p-2.5 bg-warning/5 border border-warning/20 text-warning text-[10px] rounded-lg">
+          Target not reachable within 50 years at these inputs. Increase the contribution or expected return.
+        </div>
+      )}
+      {monthsToTarget !== null && reachDate && (
+        <div className="p-2.5 bg-accent/5 border border-accent/20 text-[10px] rounded-lg text-slate-300">
+          You would reach{' '}
+          <span className="font-bold text-white font-mono-nums">{formatCurrency(targetVal, settings.currency, 0)}</span> around{' '}
+          <span className="font-bold text-accent">
+            {reachDate.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
+          </span>{' '}
+          ({Math.floor(monthsToTarget / 12) > 0 ? `${Math.floor(monthsToTarget / 12)}y ` : ''}
+          {monthsToTarget % 12}m), starting from the simulated value above.
+        </div>
+      )}
+
+      {monthsToTarget !== null && (
+        <div className="h-44 w-full">
+          <canvas ref={chartRef} />
+        </div>
+      )}
+    </div>
+  );
+}
 
 interface Hypothesis {
   id: string;
@@ -356,6 +541,9 @@ export default function WhatIfSimulator() {
           </div>
         </div>
       </div>
+
+      {/* Goal planner projects from the simulated value, so scenarios feed it */}
+      <GoalPlanner startValue={simValue} settings={settings} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* Left Column: Form & Active Scenarios */}

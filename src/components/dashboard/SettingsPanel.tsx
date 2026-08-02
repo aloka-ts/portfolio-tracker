@@ -15,6 +15,73 @@ import {
   UserCheck
 } from 'lucide-react';
 import { parseSheetFile, mapRowsToHoldings } from '../../lib/parsing/sheetParser';
+import { getThemeMode, setThemeMode, type ThemeMode } from '../../lib/theme';
+
+// Miniature theme mockup card (Wealthfolio-inspired). Colors mirror the
+// light/dark token values in global.css so previews stay truthful.
+const PREVIEW_COLORS = {
+  light: { base: '#F8FAFC', card: '#FFFFFF', line: '#CBD5E1' },
+  dark: { base: '#08090B', card: '#0E1015', line: '#334155' },
+};
+
+function ThemePreview({ variant }: { variant: 'light' | 'dark' }) {
+  const c = PREVIEW_COLORS[variant];
+  return (
+    <div className="rounded p-1.5 space-y-1" style={{ backgroundColor: c.base }}>
+      <div className="rounded-sm p-1 space-y-1" style={{ backgroundColor: c.card }}>
+        <div className="h-1 w-8 rounded" style={{ backgroundColor: '#FF0055' }} />
+        <div className="h-1 w-12 rounded" style={{ backgroundColor: c.line }} />
+      </div>
+      <div className="rounded-sm p-1 flex items-center space-x-1" style={{ backgroundColor: c.card }}>
+        <div className="h-2 w-2 rounded-full" style={{ backgroundColor: c.line }} />
+        <div className="h-1 w-10 rounded" style={{ backgroundColor: c.line }} />
+      </div>
+    </div>
+  );
+}
+
+function ThemeModeSelector() {
+  const [mode, setMode] = useState<ThemeMode>('dark');
+  React.useEffect(() => {
+    setMode(getThemeMode());
+  }, []);
+
+  const choose = (next: ThemeMode) => {
+    setMode(next);
+    setThemeMode(next);
+  };
+
+  const options: { value: ThemeMode; label: string }[] = [
+    { value: 'light', label: 'LIGHT' },
+    { value: 'dark', label: 'DARK' },
+  ];
+
+  return (
+    <div className="flex flex-col space-y-1">
+      <label className="text-[9px] text-cyan-500/60 uppercase font-bold">APPEARANCE MODE</label>
+      <div className="grid grid-cols-2 gap-2 max-w-xs">
+        {options.map((opt) => (
+          <button
+            key={opt.value}
+            onClick={() => choose(opt.value)}
+            className={`border rounded-none p-1.5 text-left transition ${
+              mode === opt.value
+                ? 'border-cyan-400 bg-cyan-500/10'
+                : 'border-cyan-500/30 hover:bg-cyan-500/5'
+            }`}
+          >
+            <ThemePreview variant={opt.value} />
+            <span className={`block text-center text-[9px] font-bold mt-1 ${
+              mode === opt.value ? 'text-cyan-300' : 'text-cyan-500/70'
+            }`}>
+              {opt.label}
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function SettingsPanel() {
   const settings = useStore(settingsStore);
@@ -141,6 +208,8 @@ export default function SettingsPanel() {
               <Sliders size={14} className="text-cyan-400" />
               <span className="glow-text-cyan">[ DISPLAY.PREFERENCES ]</span>
             </h3>
+
+            <ThemeModeSelector />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Currency selector */}

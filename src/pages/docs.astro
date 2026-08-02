@@ -1,0 +1,262 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+// Static docs — one page with a sticky section nav (Wealthfolio-inspired
+// Concepts vs. User Guide split, scaled to our page count).
+const sections = [
+  {
+    group: 'Getting Started',
+    items: [
+      { id: 'what-is-this', label: 'What is WealthFlow?' },
+      { id: 'first-upload', label: 'Your First Upload' },
+    ],
+  },
+  {
+    group: 'Concepts',
+    items: [
+      { id: 'cost-basis', label: 'Cost Basis & P&L' },
+      { id: 'rebalance-drift', label: 'Rebalance Drift' },
+      { id: 'benchmarks', label: 'Benchmark Comparison' },
+    ],
+  },
+  {
+    group: 'User Guide',
+    items: [
+      { id: 'upload-format', label: 'CSV / Sheet Format' },
+      { id: 'dividends', label: 'Recording Dividends' },
+      { id: 'goal-planner', label: 'Goal Planner' },
+      { id: 'privacy-mode', label: 'Privacy Mode' },
+      { id: 'themes', label: 'Themes' },
+    ],
+  },
+  {
+    group: 'Reference',
+    items: [
+      { id: 'price-providers', label: 'Price Providers' },
+      { id: 'faq', label: 'FAQ' },
+    ],
+  },
+];
+---
+
+<Layout title="Docs & Guide" description="How to use the WealthFlow portfolio tracker: uploads, concepts, and reference.">
+  <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 2xl:px-16 py-8">
+    <div class="mb-8 flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl md:text-3xl">Docs &amp; Guide</h1>
+        <p class="text-sm text-slate-400 mt-1">Everything you need to run your portfolio in WealthFlow.</p>
+      </div>
+      <a href="/" class="text-xs font-bold text-accent border border-accent/30 rounded-lg px-3 py-2 hover:bg-accent/10 transition">
+        &larr; Back to Dashboard
+      </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-8 lg:gap-12 items-start">
+      <!-- Section nav -->
+      <nav class="md:sticky md:top-6 space-y-5 text-sm">
+        {sections.map((section) => (
+          <div>
+            <div class="text-[10px] uppercase font-bold text-slate-500 tracking-wider mb-1.5">{section.group}</div>
+            <ul class="space-y-0.5">
+              {section.items.map((item) => (
+                <li>
+                  <a href={`#${item.id}`} class="sidebar-link !py-1.5 text-xs">{item.label}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </nav>
+
+      <!-- Content -->
+      <div class="xl:columns-2 xl:gap-8 text-sm text-slate-400 leading-relaxed [&_h2]:text-lg [&_h2]:mb-2 [&_h2]:pt-2 [&_h3]:text-sm [&_h3]:mb-1 [&_code]:font-mono [&_code]:text-accent [&_code]:text-xs [&_table]:w-full [&_table]:text-xs [&_th]:text-left [&_th]:p-2 [&_td]:p-2">
+
+        <section id="what-is-this" class="cyber-card p-6 lg:p-7 mb-8 break-inside-avoid">
+          <h2>What is WealthFlow?</h2>
+          <p>
+            WealthFlow is a lightweight, browser-first portfolio tracker. Your holdings, transactions, and
+            settings live entirely in your browser's local storage &mdash; there is no account, no cloud
+            database, and nothing leaves your machine except price lookups. Upload a CSV or Google Sheets
+            export once, then track live valuations, P&amp;L, allocation, and risk across US and Indian markets.
+          </p>
+        </section>
+
+        <section id="first-upload" class="cyber-card p-6 lg:p-7 mb-8 break-inside-avoid">
+          <h2>Your First Upload</h2>
+          <ol class="list-decimal list-inside space-y-1.5">
+            <li>
+              Prepare your file with one row per holding &mdash; copy the example in
+              <a href="#upload-format" class="text-accent">CSV / Sheet Format</a> and replace the rows with
+              your own. Broker exports from Zerodha/Groww usually work unchanged since headers are
+              auto-detected.
+            </li>
+            <li>Go to <strong>Record Activity</strong> in the top navigation and drop the file into the bulk upload zone (or add holdings one at a time with the form).</li>
+            <li>Check the <strong>Holdings</strong> tab &mdash; every row should show your quantity, average cost, and a live price within a few seconds. If a symbol shows your cost as its price, see <a href="#price-providers" class="text-accent">Price Providers</a>.</li>
+            <li>Explore: <strong>Exposure Analytics</strong> (performance vs NIFTY 50 / S&amp;P 500 across 1D&ndash;3Y), <strong>Category Rebalancing</strong>, and the <strong>What-If Simulator</strong> with its goal planner.</li>
+            <li>Record ongoing buys, sells, and dividends in <strong>Record Activity</strong> &mdash; everything else recalculates automatically.</li>
+          </ol>
+          <p class="mt-2">
+            Prefer to explore first? The <strong>Load Sample Data</strong> button on the empty dashboard seeds
+            a realistic sample portfolio. Screen-sharing? The eye icon in the top bar masks every amount.
+          </p>
+        </section>
+
+        <section id="cost-basis" class="cyber-card p-6 lg:p-7 mb-8 break-inside-avoid">
+          <h2>Cost Basis &amp; P&amp;L</h2>
+          <p>
+            Holdings are derived from your transaction log, replayed in date order. A <strong>BUY</strong> adds
+            shares and increases cost basis by <code>quantity &times; price + fees</code>. A <strong>SELL</strong>
+            removes shares at your current average cost; the difference between sale proceeds and that cost is
+            recorded as realized P&amp;L. Average cost is total cost basis divided by shares held.
+          </p>
+          <p class="mt-2">
+            <strong>Unrealized P&amp;L</strong> = current market value &minus; remaining cost basis.
+            <strong> Day's return</strong> uses each asset's 24-hour price change. Values are converted between
+            USD and INR at a fixed reference rate for aggregation.
+          </p>
+        </section>
+
+        <section id="rebalance-drift" class="cyber-card p-6 lg:p-7 mb-8 break-inside-avoid">
+          <h2>Rebalance Drift</h2>
+          <p>
+            The Category Rebalancing tab compares your current category weights (Stocks, Mutual Funds, ETFs,
+            Crypto, Cash) against your target weights. Drift is the difference between the two; the assistant
+            suggests the buy/sell amounts that would bring each category back to target without changing your
+            total portfolio value.
+          </p>
+        </section>
+
+        <section id="benchmarks" class="cyber-card p-6 lg:p-7 mb-8 break-inside-avoid">
+          <h2>Benchmark Comparison</h2>
+          <p>
+            The Exposure Analytics trend chart can overlay <strong>NIFTY 50</strong> or the
+            <strong> S&amp;P 500</strong>. The index is <em>rebased</em> to your portfolio's value at the start
+            of the window, so the two lines share one axis: if your line ends above the benchmark line, you
+            outperformed the index over that period. Benchmark closes come from Yahoo Finance daily data and
+            are forward-filled over weekends and holidays.
+          </p>
+        </section>
+
+        <section id="upload-format" class="cyber-card p-6 lg:p-7 mb-8 break-inside-avoid">
+          <h2>CSV / Sheet Format</h2>
+          <p>
+            Upload a <code>.csv</code>, <code>.xlsx</code>, or <code>.xls</code> file where the
+            <strong> first row is the header</strong> and each following row is one holding. A file that
+            imports cleanly looks like this:
+          </p>
+          <pre class="mt-3 p-3 bg-black/40 border border-white/[0.06] rounded-lg overflow-x-auto text-[11px] leading-relaxed"><code>Symbol,Quantity,Avg Cost,Platform,Date
+AAPL,25,175.50,Vested,2025-01-15
+RELIANCE.NS,45,2820.00,Zerodha,2025-03-01
+NSE:TCS,15,3910.00,Zerodha,2025-03-15
+MIDCAPIETF.NS,1600,22.40,Groww,2025-06-10
+PARA_PARI_FLEX_17J17OL,500,62.50,Groww,2025-05-15
+BTC,0.15,62000,WazirX,2025-05-01</code></pre>
+          <p class="mt-3">
+            Header names are flexible &mdash; they're matched case-insensitively (punctuation ignored)
+            against these aliases:
+          </p>
+          <table class="mt-2 border border-white/[0.06]">
+            <thead class="text-slate-300 border-b border-white/[0.08]">
+              <tr><th>Field</th><th>Required</th><th>Accepted headers</th></tr>
+            </thead>
+            <tbody class="divide-y divide-white/[0.04]">
+              <tr><td>Ticker</td><td>Yes</td><td><code>symbol</code>, <code>ticker</code>, <code>stock</code>, <code>instrument</code>, <code>code</code>, <code>asset</code></td></tr>
+              <tr><td>Quantity</td><td>Yes (&gt; 0)</td><td><code>shares</code>, <code>quantity</code>, <code>qty</code>, <code>units</code>, <code>volume</code></td></tr>
+              <tr><td>Avg Cost</td><td>Yes (&ge; 0)</td><td><code>avg cost</code>, <code>cost basis</code>, <code>purchase price</code>, <code>price</code>, <code>buy price</code></td></tr>
+              <tr><td>Platform</td><td>Recommended</td><td><code>platform</code>, <code>broker</code>, <code>account</code>, <code>exchange</code>, <code>wallet</code></td></tr>
+              <tr><td>Date</td><td>Optional</td><td><code>date</code>, <code>date acquired</code>, <code>purchase date</code> (YYYY-MM-DD)</td></tr>
+            </tbody>
+          </table>
+
+          <h3 class="text-white mt-4">How tickers are interpreted</h3>
+          <ul class="list-disc list-inside mt-1 space-y-1">
+            <li><code>RELIANCE.NS</code> / <code>TCS.BO</code> &mdash; NSE/BSE suffixes are kept as-is.</li>
+            <li><code>NSE:TCS</code> &rarr; <code>TCS.NS</code>, <code>BSE:X</code> &rarr; <code>X.BO</code> &mdash; exchange prefixes are converted.</li>
+            <li>Well-known US tickers (<code>AAPL</code>, <code>MSFT</code>, <code>NVDA</code>, &hellip;) stay US-market.</li>
+            <li>Mutual fund codes containing underscores (<code>PARA_PARI_FLEX_17J17OL</code>, the Google Finance MUTF_IN code) are kept as-is.</li>
+            <li>Crypto uses bare symbols (<code>BTC</code>, <code>ETH</code>).</li>
+            <li><strong>Any other bare ticker is assumed to be Indian</strong> and gets <code>.NS</code> appended &mdash; if a US stock outside the well-known list imports as <code>.NS</code>, add it manually via Record Activity instead.</li>
+          </ul>
+
+          <h3 class="text-white mt-4">Good to know</h3>
+          <ul class="list-disc list-inside mt-1 space-y-1">
+            <li>Empty rows and summary rows (<code>Total</code>, <code>Grand Total</code>, <code>Subtotal</code>, <code>Portfolio Value</code>) are skipped automatically.</li>
+            <li>Rows with quantity &le; 0 or a non-numeric cost are rejected with a per-row error.</li>
+            <li>For Excel workbooks, only the <strong>first sheet</strong> is read &mdash; unless the workbook contains sheets named <code>4.Portfolio Management</code> or <code>Rest of portfolio</code> (with <code>Script</code> / <code>Qty</code> / <code>Entry Price</code> / <code>Status</code> columns), in which case those are parsed and only rows with Status <code>Active</code> import.</li>
+            <li>Importing a holdings file <strong>overwrites</strong> the existing portfolio (each row becomes a BUY transaction dated from the Date column, or the upload day).</li>
+          </ul>
+        </section>
+
+        <section id="dividends" class="cyber-card p-6 lg:p-7 mb-8 break-inside-avoid">
+          <h2>Recording Dividends</h2>
+          <p>
+            In <strong>Record Activity</strong>, choose <strong>DIVIDEND / INCOME</strong>, enter the ticker and
+            the <em>total amount received</em>. Dividends add to your cash balance without changing share counts
+            or cost basis. Total recorded income appears on the Exposure Analytics tab, replacing the yield
+            estimate once you have real data.
+          </p>
+        </section>
+
+        <section id="goal-planner" class="cyber-card p-6 lg:p-7 mb-8 break-inside-avoid">
+          <h2>Goal Planner</h2>
+          <p>
+            Inside the What-If Simulator, set a target amount, a monthly contribution, and an expected annual
+            return. The planner compounds monthly from your <em>simulated</em> portfolio value &mdash; so any
+            hypothesis scenarios you've stacked (a big buy, a market crash) flow straight into the projection
+            &mdash; and tells you the month you'd cross the target, with a glide-path chart.
+          </p>
+        </section>
+
+        <section id="privacy-mode" class="cyber-card p-6 lg:p-7 mb-8 break-inside-avoid">
+          <h2>Privacy Mode</h2>
+          <p>
+            Click the eye icon on the <strong>Present Value</strong> card to mask every currency amount in the
+            app (tables, charts, ticker) &mdash; useful when screen-sharing. Percentages stay visible so the
+            dashboard remains readable. The preference persists across sessions.
+          </p>
+        </section>
+
+        <section id="themes" class="cyber-card p-6 lg:p-7 mb-8 break-inside-avoid">
+          <h2>Themes</h2>
+          <p>
+            Two modes: <strong>Light</strong> and <strong>Dark</strong>. Switch from the toggle in the top bar,
+            or pick visually in <strong>Settings &rarr; Appearance Mode</strong>. If your OS is set to reduce
+            motion, decorative animations (particles, parallax, card tilt) are disabled automatically.
+          </p>
+        </section>
+
+        <section id="price-providers" class="cyber-card p-6 lg:p-7 mb-8 break-inside-avoid">
+          <h2>Price Providers</h2>
+          <table class="border border-white/[0.06]">
+            <thead class="text-slate-300 border-b border-white/[0.08]">
+              <tr><th>Provider</th><th>Best for</th><th>Notes</th></tr>
+            </thead>
+            <tbody class="divide-y divide-white/[0.04]">
+              <tr><td>Google Finance</td><td>Indian mutual funds</td><td>Scraped quotes; default</td></tr>
+              <tr><td>Yahoo Finance</td><td>Stocks, ETFs, crypto, indices</td><td>Clean API, proxied server-side</td></tr>
+              <tr><td>Mock</td><td>Testing / offline</td><td>Deterministic noise</td></tr>
+            </tbody>
+          </table>
+          <p class="mt-2">Polling interval and provider are configurable in Settings.</p>
+        </section>
+
+        <section id="faq" class="cyber-card p-6 lg:p-7 mb-8 break-inside-avoid">
+          <h2>FAQ</h2>
+          <h3 class="text-white">Where is my data stored?</h3>
+          <p>Entirely in your browser's local storage. Clearing site data deletes it &mdash; export from Settings first.</p>
+          <h3 class="text-white mt-3">Why does a price show as my average cost?</h3>
+          <p>When no live quote is available yet, the app falls back to your cost so totals stay meaningful.</p>
+          <h3 class="text-white mt-3">Can I track multiple brokers?</h3>
+          <p>Yes &mdash; the platform field on every transaction feeds the custodian filter and platform breakdown.</p>
+          <h3 class="text-white mt-3">Is the portfolio performance chart real history?</h3>
+          <p>
+            Yes. It backtests your <em>current</em> holdings against real exchange closes from Yahoo Finance
+            across the selected timeframe (1D&ndash;3Y) &mdash; constant share counts, real prices, cash
+            excluded. Mutual funds use their published NAV series (about a month of depth; earlier points are
+            held at the first known NAV), and the benchmark overlay uses real index closes on the same axis.
+          </p>
+        </section>
+      </div>
+    </div>
+  </div>
+</Layout>

@@ -11,7 +11,7 @@ export default function TransactionsList() {
   const settings = useStore(settingsStore);
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [typeFilter, setTypeFilter] = useState<'ALL' | 'BUY' | 'SELL'>('ALL');
+  const [typeFilter, setTypeFilter] = useState<'ALL' | 'BUY' | 'SELL' | 'DIVIDEND'>('ALL');
   const [platformFilter, setPlatformFilter] = useState('ALL');
   const [sortAsc, setSortAsc] = useState(false);
 
@@ -65,6 +65,7 @@ export default function TransactionsList() {
               <option value="ALL">ALL TYPES</option>
               <option value="BUY">BUY</option>
               <option value="SELL">SELL</option>
+              <option value="DIVIDEND">DIVIDEND</option>
             </select>
           </div>
 
@@ -108,6 +109,7 @@ export default function TransactionsList() {
           <tbody className="divide-y divide-white/[0.04]">
             {sortedTxs.map((tx) => {
               const isBuy = tx.type === 'BUY';
+              const isDividend = tx.type === 'DIVIDEND';
               const totalOutlay = (tx.quantity * tx.price) + (isBuy ? tx.fees : -tx.fees);
               const txCurrency = tx.market === 'US' ? 'USD' : 'INR';
 
@@ -121,13 +123,15 @@ export default function TransactionsList() {
                     <span className={`px-2 py-0.5 rounded text-[9px] font-bold ${
                       isBuy
                         ? 'bg-gain/10 text-gain border border-gain/20'
+                        : isDividend
+                        ? 'bg-warning/10 text-warning border border-warning/20'
                         : 'bg-loss/10 text-loss border border-loss/20'
                     }`}>
                       {tx.type}
                     </span>
                   </td>
                   <td className="p-3 text-right font-mono-nums text-slate-300">
-                    {tx.quantity.toFixed(3).replace(/\.?0+$/, '')}
+                    {isDividend ? '—' : tx.quantity.toFixed(3).replace(/\.?0+$/, '')}
                   </td>
                   <td className="p-3 text-right font-mono-nums text-slate-400">
                     {formatCurrency(tx.price, txCurrency, settings.decimals)}

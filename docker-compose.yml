@@ -3,6 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: dev # compose = dev workflow; production uses the default (runtime) target
     restart: unless-stopped
     ports:
       - "3001:3001"

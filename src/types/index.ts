@@ -23,6 +23,7 @@ export interface UserSettings {
   density: 'compact' | 'comfortable';
   provider: 'mock' | 'yahoo' | 'google';
   pollingFreq: number; // in seconds, e.g. 3, 5, 30
+  privacyMode?: boolean; // mask all currency values (screen-sharing)
 }
 
 export interface AIInsight {
@@ -45,7 +46,8 @@ export interface PlatformStat {
 export interface Transaction {
   id: string;
   ticker: string;
-  type: 'BUY' | 'SELL';
+  // DIVIDEND: quantity is 1 and price is the total amount received
+  type: 'BUY' | 'SELL' | 'DIVIDEND';
   quantity: number;
   price: number;
   fees: number;

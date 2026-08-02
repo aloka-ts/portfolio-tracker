@@ -1,7 +1,7 @@
 {
   "name": "portfolio-dashboard",
   "type": "module",
-  "version": "0.0.1",
+  "version": "1.1.0",
   "engines": {
     "node": ">=22.12.0"
   },
@@ -14,6 +14,7 @@
     "test-scrape": "node tmp/test_scrape.js"
   },
   "dependencies": {
+    "@astrojs/node": "^10.1.4",
     "@astrojs/react": "^5.0.7",
     "@nanostores/react": "^1.1.0",
     "@tailwindcss/vite": "^4.3.1",

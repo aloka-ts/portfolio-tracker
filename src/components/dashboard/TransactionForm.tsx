@@ -15,7 +15,7 @@ export default function TransactionForm({ onSuccess }: TransactionFormProps) {
 
   // Form states
   const [ticker, setTicker] = useState('');
-  const [type, setType] = useState<'BUY' | 'SELL'>('BUY');
+  const [type, setType] = useState<'BUY' | 'SELL' | 'DIVIDEND'>('BUY');
   const [name, setName] = useState('');
   const [category, setCategory] = useState('Stocks');
   const [market, setMarket] = useState<'US' | 'IN'>('US');
@@ -55,14 +55,15 @@ export default function TransactionForm({ onSuccess }: TransactionFormProps) {
     if (!ticker.trim()) newErrors.ticker = 'Ticker symbol is required';
     if (!platform.trim()) newErrors.platform = 'Custodian platform is required';
     
-    const qtyVal = Number(quantity);
+    // DIVIDEND records total amount in price with quantity fixed at 1
+    const qtyVal = type === 'DIVIDEND' ? 1 : Number(quantity);
     if (isNaN(qtyVal) || qtyVal <= 0) {
       newErrors.quantity = 'Quantity must be greater than 0';
     }
 
     const priceVal = Number(price);
     if (isNaN(priceVal) || priceVal <= 0) {
-      newErrors.price = 'Price must be greater than 0';
+      newErrors.price = type === 'DIVIDEND' ? 'Amount must be greater than 0' : 'Price must be greater than 0';
     }
 
     const feesVal = Number(fees);
@@ -98,7 +99,7 @@ export default function TransactionForm({ onSuccess }: TransactionFormProps) {
       ticker: ticker.trim().toUpperCase(),
       type,
       category,
-      quantity: Number(quantity),
+      quantity: type === 'DIVIDEND' ? 1 : Number(quantity),
       price: Number(price),
       fees: Number(fees),
       date,
@@ -236,6 +237,23 @@ export default function TransactionForm({ onSuccess }: TransactionFormProps) {
                 SELL / DISPOSE
               </div>
             </label>
+
+            <label className="flex-1">
+              <input
+                type="radio"
+                name="txType"
+                checked={type === 'DIVIDEND'}
+                onChange={() => setType('DIVIDEND')}
+                className="sr-only"
+              />
+              <div className={`text-center py-2 font-bold cursor-pointer border transition duration-150 ${
+                type === 'DIVIDEND'
+                  ? 'bg-warning/10 border-warning text-warning'
+                  : 'border-white/[0.06] text-slate-400 hover:text-white'
+              }`}>
+                DIVIDEND / INCOME
+              </div>
+            </label>
           </div>
 
           {/* Ticker & Name */}
@@ -346,8 +364,8 @@ export default function TransactionForm({ onSuccess }: TransactionFormProps) {
           </div>
 
           {/* Qty, Price, Fees */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-1">
+          <div className={`grid grid-cols-1 gap-4 ${type === 'DIVIDEND' ? 'md:grid-cols-2' : 'md:grid-cols-3'}`}>
+            <div className={`space-y-1 ${type === 'DIVIDEND' ? 'hidden' : ''}`}>
               <label className="text-[10px] uppercase font-bold text-slate-400">
                 Quantity <span className="text-accent">*</span>
               </label>
@@ -371,7 +389,7 @@ export default function TransactionForm({ onSuccess }: TransactionFormProps) {
 
             <div className="space-y-1">
               <label className="text-[10px] uppercase font-bold text-slate-400">
-                Price per Share <span className="text-accent">*</span>
+                {type === 'DIVIDEND' ? 'Total Amount Received' : 'Price per Share'} <span className="text-accent">*</span>
               </label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-mono">

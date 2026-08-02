@@ -236,7 +236,7 @@ export default function HoldingsTable() {
 
       {/* TABLE VIEW (Tablet & Desktop) */}
       <div className="hidden md:block overflow-x-auto">
-        <table className="w-full text-xs text-left text-slate-350">
+        <table className="w-full text-xs text-left text-slate-350 table-row-hover">
           <thead className="bg-navy-950 text-slate-400 font-semibold border-b border-white/[0.08] uppercase tracking-wider text-[10px] select-none">
             <tr>
               <th className="p-3 w-8" />

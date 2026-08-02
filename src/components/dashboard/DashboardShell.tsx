@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useStore } from '@nanostores/react';
 import { settingsStore, updateSettings } from '../../stores/settings';
 import { portfolioStore, importTransactions, SEED_TRANSACTIONS } from '../../stores/portfolio';
@@ -30,27 +30,34 @@ import {
   Scale,
   FlaskConical,
   Settings,
-  Menu,
-  X,
   TrendingUp,
   Sun,
-  Moon
+  Moon,
+  BookOpen,
+  Eye,
+  EyeOff
 } from 'lucide-react';
+import { getThemeMode, setThemeMode, type ThemeMode } from '../../lib/theme';
 
 export default function DashboardShell() {
   const settings = useStore(settingsStore);
   const holdings = useStore(portfolioStore);
 
-  const [activeTab, setActiveTab] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      return sessionStorage.getItem('active_tab') || 'dashboard';
-    }
-    return 'dashboard';
-  });
+  const [activeTab, setActiveTab] = useState<string>('dashboard');
 
-  // Persist active tab across refreshes
+  // Load persisted tab after mount on client
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      const persisted = sessionStorage.getItem('active_tab');
+      if (persisted) {
+        setActiveTab(persisted);
+      }
+    }
+  }, []);
+
+  // Persist active tab changes
+  useEffect(() => {
+    if (typeof window !== 'undefined' && activeTab) {
       sessionStorage.setItem('active_tab', activeTab);
     }
   }, [activeTab]);
@@ -60,34 +67,51 @@ export default function DashboardShell() {
     setMounted(true);
   }, []);
 
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [systemTime, setSystemTime] = useState('');
-  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+
+  // Sliding pill indicator for the top tab strip
+  const [pill, setPill] = useState({ left: 0, width: 0 });
+  const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const isDark = document.documentElement.classList.contains('dark');
-      setTheme(isDark ? 'dark' : 'light');
-    }
+    const measure = () => {
+      const el = tabRefs.current[activeTab];
+      if (el) {
+        setPill({ left: el.offsetLeft, width: el.offsetWidth });
+        el.scrollIntoView({ inline: 'nearest', block: 'nearest' });
+      }
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, [activeTab, mounted]);
+
+  // Privacy blur shutter: blur content, swap values mid-blur, unblur
+  const [privacyAnimating, setPrivacyAnimating] = useState(false);
+  const togglePrivacy = () => {
+    setPrivacyAnimating(true);
+    window.setTimeout(() => {
+      updateSettings({ privacyMode: !settingsStore.get().privacyMode });
+    }, 150);
+    window.setTimeout(() => setPrivacyAnimating(false), 480);
+  };
+  const [theme, setTheme] = useState<ThemeMode>('dark');
+
+  useEffect(() => {
+    setTheme(getThemeMode());
   }, []);
 
   const toggleTheme = () => {
-    const nextTheme = theme === 'dark' ? 'light' : 'dark';
+    const nextTheme: ThemeMode = theme === 'dark' ? 'light' : 'dark';
     setTheme(nextTheme);
-    if (nextTheme === 'dark') {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
+    setThemeMode(nextTheme);
   };
 
   // Clock update for Market status widget
   useEffect(() => {
     const updateTime = () => {
       const d = new Date();
-      setSystemTime(d.toUTCString().replace('GMT', 'UTC'));
+      setSystemTime(`${d.toLocaleTimeString('en-GB', { timeZone: 'UTC', hour12: false })} UTC`);
     };
     updateTime();
     const interval = setInterval(updateTime, 1000);
@@ -117,108 +141,56 @@ export default function DashboardShell() {
   return (
     <div className="flex min-h-screen bg-transparent relative">
       
-      {/* 1. SIDEBAR (Desktop: Fixed, Mobile: Drawer) */}
-      <aside className={`fixed inset-y-0 left-0 z-40 w-64 bg-navy-900 border-r border-white/[0.04] flex flex-col justify-between p-5 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static ${
-        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      }`}>
-        
-        {/* Logo and close button */}
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2.5">
+      {/* MAIN CONTENT WRAPPER (top-nav layout) */}
+      <div className="flex-1 flex flex-col min-w-0">
+
+        {/* Top Ticker Tape & floating glass navigation */}
+        <header className="sticky top-0 z-40 w-full flex flex-col">
+          <TickerTape />
+
+          <div className="px-3 sm:px-4 lg:px-6 pt-2.5 pb-1.5">
+            <div className="floating-nav rounded-2xl flex h-14 items-center gap-3 lg:gap-5 px-3 sm:px-5">
+            {/* Logo */}
+            <div className="hidden md:flex items-center space-x-2.5 shrink-0 animate-drop-in">
               <div className="p-1.5 bg-accent/10 border border-accent/20 rounded-lg text-accent">
-                <TrendingUp size={20} />
+                <TrendingUp size={18} />
               </div>
-              <span className="font-heading font-extrabold text-base tracking-tight text-white flex items-center space-x-1">
+              <span className="font-heading font-extrabold text-sm tracking-tight text-white hidden xl:flex items-center space-x-1">
                 <span>WealthFlow</span>
                 <span className="bg-accent text-white font-bold text-[9px] px-1.5 py-0.5 rounded">Folio</span>
               </span>
             </div>
-            <button 
-              onClick={() => setSidebarOpen(false)}
-              className="p-1 text-slate-400 hover:text-white lg:hidden border border-white/[0.06] rounded"
-            >
-              <X size={16} />
-            </button>
-          </div>
 
-          {/* Nav Menu */}
-          <nav className="flex flex-col gap-1">
-            {menuItems.map(item => {
-              const Icon = item.icon;
-              const isActive = activeTab === item.id;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => {
-                    setActiveTab(item.id);
-                    setSidebarOpen(false);
-                  }}
-                  className={`sidebar-link w-full text-left ${isActive ? 'active' : ''}`}
-                >
-                  <Icon size={16} className={isActive ? 'text-accent' : 'text-slate-450'} />
-                  <span>{item.label}</span>
-                </button>
-              );
-            })}
-          </nav>
-        </div>
+            {/* Tab strip with sliding active pill */}
+            <nav className="relative flex-1 flex items-center gap-0.5 h-full overflow-x-auto scrollbar-none">
+              <span
+                className="top-tab-pill"
+                style={{ left: pill.left, width: pill.width, opacity: pill.width ? 1 : 0 }}
+              />
+              {menuItems.map((item, idx) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    ref={(el) => { tabRefs.current[item.id] = el; }}
+                    onClick={() => setActiveTab(item.id)}
+                    title={item.label}
+                    style={{ animationDelay: `${idx * 40}ms` }}
+                    className={`animate-drop-in relative z-[1] flex items-center gap-1.5 px-2.5 lg:px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors duration-200 ${
+                      isActive ? 'text-white' : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <Icon size={15} className={isActive ? 'text-accent' : ''} />
+                    <span className="hidden lg:inline">{item.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
 
-        {/* Market Simulator Status Widget & Theme Toggle */}
-        <div className="space-y-3">
-          <div className="p-3.5 bg-white/[0.01] border border-white/[0.05] rounded-lg space-y-2">
-            <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-              <span className="status-pulse-dot"></span>
-              <span>Market Simulator</span>
-            </div>
-            <div className="text-[11px] font-mono text-slate-300 font-semibold">{systemTime}</div>
-            <div className="text-[9px] text-slate-500 font-sans">
-              Feeds refresh every {settings.pollingFreq}s
-            </div>
-          </div>
-          
-          <div className="flex items-center justify-between px-1">
-            <span className="text-xs text-slate-400 font-medium">Theme</span>
-            <button
-              onClick={toggleTheme}
-              className="theme-toggle-btn"
-              title="Toggle theme"
-            >
-              {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
-            </button>
-          </div>
-        </div>
-      </aside>
-
-      {/* Mobile Sidebar Overlay */}
-      {sidebarOpen && (
-        <div 
-          onClick={() => setSidebarOpen(false)}
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 lg:hidden"
-        />
-      )}
-
-      {/* 2. MAIN CONTENT WRAPPER */}
-      <div className="flex-1 flex flex-col min-w-0">
-        
-        {/* Top Ticker Tape & Mobile Navigation header */}
-        <header className="sticky top-0 z-20 w-full bg-navy-950/80 backdrop-blur-md border-b border-white/[0.04] flex flex-col">
-          <TickerTape />
-          
-          <div className="flex h-14 items-center justify-between px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center gap-3">
-              {/* Hamburger */}
-              <button
-                onClick={() => setSidebarOpen(true)}
-                className="p-1.5 text-slate-400 hover:text-white border border-white/[0.06] rounded lg:hidden"
-              >
-                <Menu size={18} />
-              </button>
-            </div>
-
-            {/* Currency switcher & theme toggle */}
-            <div className="flex items-center space-x-3">
-              <div className="premium-currency-selector">
+            {/* Utility cluster: currency / privacy / theme / docs / clock */}
+            <div className="flex items-center space-x-2 shrink-0 top-actions">
+              <div className="premium-currency-selector hidden md:flex">
                 <button
                   onClick={() => handleCurrencyChange('USD')}
                   className={`premium-currency-btn ${settings.currency === 'USD' ? 'active' : ''}`}
@@ -233,20 +205,42 @@ export default function DashboardShell() {
                 </button>
               </div>
 
-              {/* Theme toggle for mobile header (hidden on desktop sidebar) */}
+              <button
+                onClick={togglePrivacy}
+                className="theme-toggle-btn"
+                title={settings.privacyMode ? 'Show balances' : 'Hide balances (privacy mode)'}
+                aria-label={settings.privacyMode ? 'Show balances' : 'Hide balances'}
+              >
+                <span key={String(settings.privacyMode)} className="animate-icon-morph inline-flex">
+                  {settings.privacyMode ? <EyeOff size={15} /> : <Eye size={15} />}
+                </span>
+              </button>
+
               <button
                 onClick={toggleTheme}
-                className="theme-toggle-btn lg:hidden"
-                title="Toggle theme"
+                className="theme-toggle-btn"
+                title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
               >
-                {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+                <span key={theme} className="animate-icon-morph inline-flex">
+                  {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+                </span>
               </button>
+
+              <a href="/docs" className="theme-toggle-btn" title="Docs & Guide">
+                <BookOpen size={15} />
+              </a>
+
+              <div className="hidden xl:flex items-center gap-1.5 pl-1.5 text-[10px] font-mono text-slate-400" title={`Market feed clock — refreshes every ${settings.pollingFreq}s`}>
+                <span className="status-pulse-dot"></span>
+                <span>{systemTime}</span>
+              </div>
+            </div>
             </div>
           </div>
         </header>
 
-        {/* Main Section Content Area */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1600px] w-full mx-auto space-y-6 relative z-10">
+        {/* Main Section Content Area (blur shutter during privacy toggle) */}
+        <main className={`flex-1 w-full p-4 sm:p-6 lg:px-10 lg:py-8 2xl:px-16 space-y-6 relative z-10 privacy-shutter ${privacyAnimating ? 'privacy-shutter-active' : ''}`}>
           
           {!mounted ? (
             /* Premium Shimmering Loading Skeleton */
@@ -275,7 +269,7 @@ export default function DashboardShell() {
             </div>
           ) : (
             /* Active Tab Routing */
-            <div className="animate-slide-up" style={{ animationDelay: '0.05s' }}>
+            <div key={activeTab} className="animate-tab-change">
               {activeTab === 'dashboard' && (
                 <div className="space-y-6">
                   {/* Welcome Banner for Empty State */}

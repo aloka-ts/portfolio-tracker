@@ -36,6 +36,7 @@ ehthumbs.db
 # Editor & IDE configurations
 .idea/
 .vscode/
+CLAUDE.md
 *.suo
 *.ntvs*
 *.njsproj
@@ -45,8 +46,10 @@ ehthumbs.db
 # TypeScript cache
 *.tsbuildinfo
 
-# local tmp and debug logs
+# local tmp, scratch, and debug logs
 tmp/
+scratch/
+src/scratch/
 
 # user spreadsheets and CSV files
 public/*.csv
@@ -55,4 +58,6 @@ public/*.xls
 *.csv
 *.xlsx
 *.xls
+
+graphify-out/
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, Settings, Sun, Moon, Sparkles, TrendingUp, X, TrendingDown, HelpCircle, User } from 'lucide-react';
+import { getThemeMode, setThemeMode, type ThemeMode } from '../../lib/theme';
 import { settingsStore, updateSettings } from '../../stores/settings';
 import { useStore } from '@nanostores/react';
 import { MockMarketDataProvider } from '../../lib/market/mockProvider';
@@ -19,25 +20,16 @@ export default function Navigation() {
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [showGuideModal, setShowGuideModal] = useState(false);
   const [hasUploadedData, setHasUploadedData] = useState(false);
-  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+  const [theme, setTheme] = useState<ThemeMode>('dark');
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const isDark = document.documentElement.classList.contains('dark');
-      setTheme(isDark ? 'dark' : 'light');
-    }
+    setTheme(getThemeMode());
   }, []);
 
   const toggleTheme = () => {
-    const nextTheme = theme === 'dark' ? 'light' : 'dark';
+    const nextTheme: ThemeMode = theme === 'dark' ? 'light' : 'dark';
     setTheme(nextTheme);
-    if (nextTheme === 'dark') {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
+    setThemeMode(nextTheme);
   };
 
   useEffect(() => {
@@ -214,7 +206,7 @@ export default function Navigation() {
               {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}
-                title="Toggle Dark/Light Theme"
+                title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
                 className="p-1.5 rounded-lg border border-white/[0.06] hover:bg-white/[0.04] text-stone-400 hover:text-white transition duration-150"
               >
                 {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}

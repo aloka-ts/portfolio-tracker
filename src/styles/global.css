@@ -14,6 +14,22 @@
   --shadow-main: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
   --glass-bg: rgba(255, 255, 255, 0.7);
   --glass-border: rgba(15, 23, 42, 0.06);
+
+  /* Chart palette (light: deeper hues for contrast on white) */
+  --chart-1: #E00048;
+  --chart-2: #0891B2;
+  --chart-3: #059669;
+  --chart-4: #4F46E5;
+  --chart-5: #D97706;
+  --chart-6: #DB2777;
+  --chart-7: #7C3AED;
+  --chart-8: #64748B;
+
+  /* Background decor tokens (light: soft pastel tints, multiply blend) */
+  --grid-line: rgba(15, 23, 42, 0.045);
+  --aurora-1: rgba(255, 0, 85, 0.05);
+  --aurora-2: rgba(95, 90, 247, 0.05);
+  --aurora-3: rgba(8, 182, 212, 0.05);
 }
 
 html.dark {
@@ -29,6 +45,22 @@ html.dark {
   --shadow-main: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
   --glass-bg: rgba(8, 9, 11, 0.7);
   --glass-border: rgba(255, 255, 255, 0.04);
+
+  /* Chart palette (dark: neon variants) */
+  --chart-1: #FF0055;
+  --chart-2: #0EA5E9;
+  --chart-3: #10B981;
+  --chart-4: #5F5AF7;
+  --chart-5: #F59E0B;
+  --chart-6: #EC4899;
+  --chart-7: #8B5CF6;
+  --chart-8: #64748B;
+
+  /* Background decor tokens (dark: neon tints, screen blend) */
+  --grid-line: rgba(255, 255, 255, 0.03);
+  --aurora-1: rgba(255, 0, 85, 0.13);
+  --aurora-2: rgba(95, 90, 247, 0.10);
+  --aurora-3: rgba(8, 182, 212, 0.11);
 }
 
 @theme {
@@ -136,16 +168,51 @@ html.dark {
   z-index: 2;
 }
 
-/* Hairline Grid & Hotspot styles matching reference */
-.grid-hairline-v {
+/* Fine background grid, fading out away from the top */
+.bg-grid-pattern {
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, black 10%, transparent 75%);
+  mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, black 10%, transparent 75%);
+  pointer-events: none;
+}
+
+/* Static aurora glow pinned behind the top nav */
+.aurora-glow {
   position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 1px;
-  background-color: var(--border-light);
   pointer-events: none;
   z-index: 0;
-  opacity: 0.5;
+  mix-blend-mode: screen;
+  animation: aurora-pulse 12s ease-in-out infinite;
+}
+
+html:not(.dark) .aurora-glow {
+  mix-blend-mode: multiply;
+}
+
+@keyframes aurora-pulse {
+  0%, 100% {
+    opacity: 0.7;
+    transform: translateX(-50%) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1.08);
+  }
+}
+
+/* Edge vignette for depth; dark mode only */
+.bg-vignette {
+  background: radial-gradient(ellipse 120% 90% at 50% 20%, transparent 60%, rgba(0, 0, 0, 0.35) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+html.dark .bg-vignette {
+  opacity: 1;
 }
 
 .hotspot-plus {
@@ -239,6 +306,11 @@ html.dark {
   will-change: transform;
   transform: translate3d(0, 0, 0);
   animation: float-blob 20s infinite ease-in-out;
+}
+
+/* Screen blend vanishes on white; multiply lets pastel tints show in light mode */
+html:not(.dark) .glow-blob {
+  mix-blend-mode: multiply;
 }
 
 @keyframes float-blob {
@@ -525,5 +597,195 @@ html:not(.dark) {
   /* Placeholders */
   input::placeholder, select::placeholder {
     color: var(--text-muted-more) !important;
+  }
+}
+
+/* -------------------------------------------------------------
+   Smooth Transitions & Micro-interactions System
+   ------------------------------------------------------------- */
+
+/* Smooth Theme Switching Fade */
+.theme-transition,
+.theme-transition *,
+.theme-transition ::before,
+.theme-transition ::after {
+  transition: background-color 0.25s ease-in-out, 
+              border-color 0.25s ease-in-out, 
+              color 0.2s ease-in-out, 
+              fill 0.25s ease-in-out, 
+              stroke 0.25s ease-in-out, 
+              box-shadow 0.25s ease-in-out !important;
+}
+
+/* Fluid Tab Slide-up Fade Transition */
+@keyframes tabSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-tab-change {
+  animation: tabSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Cards & Interactable Elements Hover Micro-scaling */
+.hover-scale {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), 
+              box-shadow 0.2s ease, 
+              border-color 0.2s ease;
+}
+
+.hover-scale:hover {
+  transform: translateY(-2px) scale(1.008);
+  box-shadow: 0 10px 24px -12px rgba(6, 182, 212, 0.15);
+  border-color: rgba(6, 182, 212, 0.35) !important;
+}
+
+html:not(.dark) .hover-scale:hover {
+  box-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.08);
+  border-color: var(--border-light) !important;
+}
+
+/* Smooth Table Row Highlighting */
+.table-row-hover tr {
+  transition: background-color 0.15s ease-in-out;
+}
+
+.table-row-hover tr:hover {
+  background-color: var(--bg-hover) !important;
+}
+
+/* General Transition Utility */
+.transition-all-300 {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* -------------------------------------------------------------
+   Top-panel navigation: sliding pill, stagger entrance, icon morph
+   ------------------------------------------------------------- */
+
+/* Floating glass nav bar (Wealthfolio-style rounded pill header) */
+.floating-nav {
+  position: relative;
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 32px -12px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 0, 85, 0.04);
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+html:not(.dark) .floating-nav {
+  box-shadow: 0 8px 24px -12px rgba(15, 23, 42, 0.14);
+}
+
+/* Accent hairline glowing along the bottom edge of the floating nav */
+.floating-nav::after {
+  content: "";
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: -1px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 0, 85, 0.35), transparent);
+  pointer-events: none;
+}
+
+/* Pill that glides behind the active top tab (position set from JS measurement) */
+.top-tab-pill {
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  background: rgba(255, 0, 85, 0.10);
+  border: 1px solid rgba(255, 0, 85, 0.25);
+  border-radius: 8px;
+  pointer-events: none;
+  transition: left 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+              width 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+              opacity 0.2s ease;
+}
+
+html:not(.dark) .top-tab-pill {
+  background: rgba(255, 0, 85, 0.06);
+}
+
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Staggered drop-in entrance for header elements */
+@keyframes dropInFade {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-drop-in {
+  animation: dropInFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.top-actions > * {
+  animation: dropInFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.top-actions > *:nth-child(1) { animation-delay: 0.30s; }
+.top-actions > *:nth-child(2) { animation-delay: 0.36s; }
+.top-actions > *:nth-child(3) { animation-delay: 0.42s; }
+.top-actions > *:nth-child(4) { animation-delay: 0.48s; }
+.top-actions > *:nth-child(5) { animation-delay: 0.54s; }
+
+/* Icon morph when a toggle changes state (theme cycle, privacy eye) */
+@keyframes iconMorphIn {
+  from {
+    transform: rotate(-90deg) scale(0.4);
+    opacity: 0;
+  }
+  to {
+    transform: rotate(0deg) scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-icon-morph {
+  animation: iconMorphIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Privacy shutter: content blurs out, values swap masked, content unblurs */
+.privacy-shutter {
+  transition: filter 0.18s ease;
+}
+
+.privacy-shutter-active {
+  filter: blur(10px);
+}
+
+/* Accessibility: collapse all decorative motion for users who opt out.
+   Canvas particles/parallax/tilt are guarded separately in Layout.astro. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Ticker relies on its animation to scroll into view; pin it instead */
+  .ticker-tape-scroll {
+    padding-left: 0;
   }
 }

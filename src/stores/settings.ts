@@ -8,6 +8,7 @@ const DEFAULT_SETTINGS: UserSettings = {
   density: 'comfortable',
   provider: 'google',
   pollingFreq: 5, // 5 seconds
+  privacyMode: false,
 };
 
 // Check if localStorage is available (browser side)
