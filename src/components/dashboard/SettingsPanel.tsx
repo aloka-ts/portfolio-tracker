@@ -12,16 +12,19 @@ import {
   Eye, 
   EyeOff,
   LogOut,
-  UserCheck
+  UserCheck,
+  Lock,
+  Unlock,
+  KeyRound
 } from 'lucide-react';
 import { parseSheetFile, mapRowsToHoldings } from '../../lib/parsing/sheetParser';
 import { getThemeMode, setThemeMode, type ThemeMode } from '../../lib/theme';
 
-// Miniature theme mockup card (Wealthfolio-inspired). Colors mirror the
+// Miniature theme mockup card. Colors mirror the
 // light/dark token values in global.css so previews stay truthful.
 const PREVIEW_COLORS = {
-  light: { base: '#F8FAFC', card: '#FFFFFF', line: '#CBD5E1' },
-  dark: { base: '#08090B', card: '#0E1015', line: '#334155' },
+  light: { base: '#F0F7F3', card: '#FFFFFF', line: '#C8E6D6' },
+  dark: { base: '#0B1B13', card: '#11291D', line: '#245842' },
 };
 
 function ThemePreview({ variant }: { variant: 'light' | 'dark' }) {
@@ -29,7 +32,7 @@ function ThemePreview({ variant }: { variant: 'light' | 'dark' }) {
   return (
     <div className="rounded p-1.5 space-y-1" style={{ backgroundColor: c.base }}>
       <div className="rounded-sm p-1 space-y-1" style={{ backgroundColor: c.card }}>
-        <div className="h-1 w-8 rounded" style={{ backgroundColor: '#FF0055' }} />
+        <div className="h-1 w-8 rounded" style={{ backgroundColor: '#22C55E' }} />
         <div className="h-1 w-12 rounded" style={{ backgroundColor: c.line }} />
       </div>
       <div className="rounded-sm p-1 flex items-center space-x-1" style={{ backgroundColor: c.card }}>
@@ -133,6 +136,104 @@ export default function SettingsPanel() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  // Encrypted JSON export/import helpers using Web Crypto API
+  const handleExportEncryptedJSON = async () => {
+    const password = prompt('Enter a password to encrypt your backup (or leave blank for plain JSON):');
+    const rawData = {
+      transactions: JSON.parse(localStorage.getItem('portfolio_transactions') || '[]'),
+      settings: settingsStore.get(),
+      user: JSON.parse(localStorage.getItem('portfolio_user') || '{}'),
+      exportDate: new Date().toISOString()
+    };
+    const jsonStr = JSON.stringify(rawData, null, 2);
+
+    let outputStr = jsonStr;
+    let filename = `portfolio_backup_${new Date().toISOString().split('T')[0]}.json`;
+
+    if (password && password.trim().length > 0) {
+      try {
+        const enc = new TextEncoder();
+        const salt = crypto.getRandomValues(new Uint8Array(16));
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
+        const key = await crypto.subtle.deriveKey(
+          { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+          keyMaterial,
+          { name: 'AES-GCM', length: 256 },
+          false,
+          ['encrypt']
+        );
+        const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode(jsonStr));
+        const payload = {
+          encrypted: true,
+          salt: Array.from(salt),
+          iv: Array.from(iv),
+          ciphertext: Array.from(new Uint8Array(encrypted))
+        };
+        outputStr = JSON.stringify(payload, null, 2);
+        filename = `portfolio_backup_encrypted_${new Date().toISOString().split('T')[0]}.json`;
+      } catch (err: any) {
+        alert('Encryption failed: ' + err.message);
+        return;
+      }
+    }
+
+    const blob = new Blob([outputStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImportEncryptedJSON = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0]) return;
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      try {
+        const text = evt.target?.result as string;
+        const parsed = JSON.parse(text);
+        let finalData = parsed;
+
+        if (parsed.encrypted) {
+          const password = prompt('This backup is encrypted. Enter password to decrypt:');
+          if (!password) return;
+          const enc = new TextEncoder();
+          const salt = new Uint8Array(parsed.salt);
+          const iv = new Uint8Array(parsed.iv);
+          const ciphertext = new Uint8Array(parsed.ciphertext);
+          const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
+          const key = await crypto.subtle.deriveKey(
+            { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+            keyMaterial,
+            { name: 'AES-GCM', length: 256 },
+            false,
+            ['decrypt']
+          );
+          const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ciphertext);
+          const decryptedStr = new TextDecoder().decode(decrypted);
+          finalData = JSON.parse(decryptedStr);
+        }
+
+        if (finalData.transactions && Array.isArray(finalData.transactions)) {
+          localStorage.setItem('portfolio_transactions', JSON.stringify(finalData.transactions));
+          if (finalData.settings) {
+            updateSettings(finalData.settings);
+          }
+          alert('Backup restored successfully! Refreshing view...');
+          window.location.reload();
+        } else {
+          alert('Invalid backup structure.');
+        }
+      } catch (err: any) {
+        alert('Restore failed: Invalid password or corrupted backup file.');
+      }
+    };
+    reader.readAsText(file);
   };
 
   // Direct manual file import inside Settings
@@ -379,6 +480,27 @@ export default function SettingsPanel() {
                 <Download size={12} />
                 <span>DUMP DATA MANIFEST (CSV)</span>
               </button>
+
+              {/* Encrypted JSON Exporter */}
+              <button
+                onClick={handleExportEncryptedJSON}
+                className="w-full py-2 bg-black hover:bg-emerald-500/10 text-emerald-400 font-bold text-xs rounded-none border border-emerald-500/20 hover:border-emerald-500/40 flex items-center justify-center space-x-1.5 uppercase transition"
+              >
+                <Lock size={12} />
+                <span>EXPORT ENCRYPTED BACKUP (.JSON)</span>
+              </button>
+
+              {/* Encrypted JSON Restorer */}
+              <label className="w-full py-2 bg-black hover:bg-emerald-500/10 text-emerald-400 font-bold text-xs rounded-none border border-emerald-500/20 hover:border-emerald-500/40 flex items-center justify-center space-x-1.5 cursor-pointer text-center uppercase transition">
+                <Unlock size={12} />
+                <span>RESTORE ENCRYPTED BACKUP (.JSON)</span>
+                <input
+                  type="file"
+                  onChange={handleImportEncryptedJSON}
+                  accept=".json"
+                  className="hidden"
+                />
+              </label>
 
               {/* Danger Zone: Clear database */}
               <button

@@ -154,7 +154,7 @@ export default function Navigation() {
 
   return (
     <>
-      <nav className="sticky top-0 z-50 w-full border-b border-white/[0.04] bg-[#08090B]/90 backdrop-blur-md">
+      <nav className="sticky top-0 z-50 w-full border-b border-white/[0.04] bg-navy-950/90 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between gap-4">
 

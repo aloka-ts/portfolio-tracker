@@ -76,7 +76,7 @@ export default function AllocationCharts() {
             datasets: [{
               data: platformValues,
               backgroundColor: colors.slice(0, platformLabels.length),
-              borderColor: getCssVar('--bg-card', '#0D111C'),
+              borderColor: getCssVar('--bg-card', '#11291D'),
               borderWidth: 2,
               hoverOffset: 4
             }]
@@ -123,7 +123,7 @@ export default function AllocationCharts() {
             labels: topWeights.map(w => w.symbol),
             datasets: [{
               data: topWeights.map(w => w.weight),
-              backgroundColor: topWeights.map(w => w.weight > 20 ? '#64748B' : '#FF0055'),
+              backgroundColor: topWeights.map(w => w.weight > 20 ? getCssVar('--color-warning', '#F59E0B') : getCssVar('--color-accent', '#22C55E')),
               borderRadius: 4,
               borderWidth: 0,
               barThickness: 12
@@ -147,12 +147,12 @@ export default function AllocationCharts() {
             scales: {
               x: {
                 grid: { color: 'rgba(255, 255, 255, 0.04)' },
-                ticks: { color: getCssVar('--text-muted', '#94A3B8'), font: { family: 'Inter', size: 9 } },
+                ticks: { color: getCssVar('--text-muted', '#86EFAC'), font: { family: 'Inter', size: 9 } },
                 max: 100
               },
               y: {
                 grid: { display: false },
-                ticks: { color: getCssVar('--text-main', '#ffffff'), font: { family: 'Inter', size: 10 } }
+                ticks: { color: getCssVar('--text-main', '#F0FDF4'), font: { family: 'Inter', size: 10 } }
               }
             }
           }
@@ -182,12 +182,12 @@ export default function AllocationCharts() {
             labels: months,
             datasets: [{
               data: values,
-              borderColor: '#FF0055',
-              backgroundColor: 'rgba(255, 0, 85, 0.04)',
+              borderColor: getCssVar('--color-accent', '#22C55E'),
+              backgroundColor: 'rgba(34, 197, 94, 0.08)',
               borderWidth: 2,
               fill: true,
               pointRadius: 3,
-              pointBackgroundColor: '#FF0055',
+              pointBackgroundColor: getCssVar('--color-accent', '#22C55E'),
               tension: 0.15
             }]
           },

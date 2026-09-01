@@ -2,75 +2,75 @@
 @import "tailwindcss";
 
 :root {
-  /* Light Theme Tokens */
-  --bg-base: #F8FAFC;
+  /* Light Theme Tokens - Fresh Botanical Meadow / Garden */
+  --bg-base: #F0F7F3;
   --bg-card: #FFFFFF;
-  --bg-hover: #F1F5F9;
-  --text-main: #0F172A;
-  --text-muted: #64748B;
-  --text-muted-more: #94A3B8;
-  --border-light: rgba(15, 23, 42, 0.08);
-  --border-accent-glow: rgba(255, 0, 85, 0.15);
-  --shadow-main: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
-  --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-border: rgba(15, 23, 42, 0.06);
+  --bg-hover: #E3F2E9;
+  --text-main: #0B2418;
+  --text-muted: #3D6652;
+  --text-muted-more: #628E77;
+  --border-light: rgba(11, 36, 24, 0.08);
+  --border-accent-glow: rgba(34, 197, 94, 0.20);
+  --shadow-main: 0 10px 30px -10px rgba(11, 36, 24, 0.06);
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(11, 36, 24, 0.08);
 
-  /* Chart palette (light: deeper hues for contrast on white) */
-  --chart-1: #E00048;
-  --chart-2: #0891B2;
-  --chart-3: #059669;
-  --chart-4: #4F46E5;
-  --chart-5: #D97706;
-  --chart-6: #DB2777;
-  --chart-7: #7C3AED;
-  --chart-8: #64748B;
+  /* Chart palette (light) */
+  --chart-1: #16A34A;
+  --chart-2: #0D9488;
+  --chart-3: #D97706;
+  --chart-4: #059669;
+  --chart-5: #65A30D;
+  --chart-6: #EA580C;
+  --chart-7: #0284C7;
+  --chart-8: #52796F;
 
-  /* Background decor tokens (light: soft pastel tints, multiply blend) */
-  --grid-line: rgba(15, 23, 42, 0.045);
-  --aurora-1: rgba(255, 0, 85, 0.05);
-  --aurora-2: rgba(95, 90, 247, 0.05);
-  --aurora-3: rgba(8, 182, 212, 0.05);
+  /* Background decor tokens (light) */
+  --grid-line: rgba(11, 36, 24, 0.04);
+  --aurora-1: rgba(34, 197, 94, 0.06);
+  --aurora-2: rgba(16, 185, 129, 0.05);
+  --aurora-3: rgba(5, 150, 105, 0.06);
 }
 
 html.dark {
-  /* Dark Theme Tokens */
-  --bg-base: #08090B;
-  --bg-card: #0E1015;
-  --bg-hover: #171A24;
-  --text-main: #F8FAFC;
-  --text-muted: #94A3B8;
-  --text-muted-more: #64748B;
-  --border-light: rgba(255, 255, 255, 0.04);
-  --border-accent-glow: rgba(255, 0, 85, 0.2);
-  --shadow-main: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
-  --glass-bg: rgba(8, 9, 11, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.04);
+  /* Dark Theme Tokens - Deep Luxury Forest Pine / Emerald (matches attached reference) */
+  --bg-base: #0B1B13;       /* Deep luxurious dark pine / forest floor */
+  --bg-card: #11291D;       /* Rich botanical container green */
+  --bg-hover: #173828;      /* Lush deep foliage hover */
+  --text-main: #F0FDF4;      /* Soft luminous mint-white */
+  --text-muted: #86EFAC;     /* Soft sage green text */
+  --text-muted-more: #5B826E;/* Muted forest moss */
+  --border-light: rgba(74, 222, 128, 0.12);
+  --border-accent-glow: rgba(74, 222, 128, 0.25);
+  --shadow-main: 0 12px 40px -10px rgba(0, 0, 0, 0.6);
+  --glass-bg: rgba(11, 27, 19, 0.85);
+  --glass-border: rgba(74, 222, 128, 0.15);
 
-  /* Chart palette (dark: neon variants) */
-  --chart-1: #FF0055;
-  --chart-2: #0EA5E9;
-  --chart-3: #10B981;
-  --chart-4: #5F5AF7;
-  --chart-5: #F59E0B;
-  --chart-6: #EC4899;
-  --chart-7: #8B5CF6;
-  --chart-8: #64748B;
+  /* Chart palette (dark: vibrant botanical foliage & terracotta/amber highlights) */
+  --chart-1: #22C55E; /* Emerald Leaf */
+  --chart-2: #10B981; /* Jade Green */
+  --chart-3: #EAB308; /* Warm Pot Gold */
+  --chart-4: #34D399; /* Spring Mint */
+  --chart-5: #14B8A6; /* Forest Teal */
+  --chart-6: #F59E0B; /* Terracotta Amber */
+  --chart-7: #86EFAC; /* Pale Sage */
+  --chart-8: #64748B; /* Foliage Slate */
 
-  /* Background decor tokens (dark: neon tints, screen blend) */
-  --grid-line: rgba(255, 255, 255, 0.03);
-  --aurora-1: rgba(255, 0, 85, 0.13);
-  --aurora-2: rgba(95, 90, 247, 0.10);
-  --aurora-3: rgba(8, 182, 212, 0.11);
+  /* Background decor tokens (dark: rich emerald atmospheric light) */
+  --grid-line: rgba(74, 222, 128, 0.04);
+  --aurora-1: rgba(34, 197, 94, 0.16);
+  --aurora-2: rgba(16, 185, 129, 0.12);
+  --aurora-3: rgba(5, 150, 105, 0.18);
 }
 
 @theme {
-  --color-navy-950: var(--bg-base); /* Deepest Midnight Base / Light Base */
-  --color-navy-900: var(--bg-card); /* Obsidian flat dark card / Light Card */
-  --color-navy-800: var(--bg-hover); /* Button / Hover state */
-  --color-accent: #FF0055;   /* Raspberry Hot Pink */
-  --color-gain: #10B981;     /* Emerald green */
-  --color-loss: #FF0055;     /* Raspberry loss */
-  --color-warning: #F59E0B;
+  --color-navy-950: var(--bg-base); /* Deep Forest Base */
+  --color-navy-900: var(--bg-card); /* Botanical Card Base */
+  --color-navy-800: var(--bg-hover); /* Foliage Hover state */
+  --color-accent: #22C55E;   /* Botanical Leaf Emerald */
+  --color-gain: #4ADE80;     /* Spring Green Gain */
+  --color-loss: #F87171;     /* Blossom Coral Loss */
+  --color-warning: #F59E0B;  /* Terracotta Amber */
   
   --color-slate-500: var(--text-muted-more);
   --color-slate-400: var(--text-muted);
@@ -147,7 +147,7 @@ html.dark {
   inset: 0;
   background: radial-gradient(
     400px circle at var(--mouse-x, 0px) var(--mouse-y, 0px),
-    rgba(255, 0, 85, 0.06),
+    rgba(74, 222, 128, 0.08),
     transparent 80%
   );
   z-index: 1;
@@ -205,7 +205,7 @@ html:not(.dark) .aurora-glow {
 
 /* Edge vignette for depth; dark mode only */
 .bg-vignette {
-  background: radial-gradient(ellipse 120% 90% at 50% 20%, transparent 60%, rgba(0, 0, 0, 0.35) 100%);
+  background: radial-gradient(ellipse 120% 90% at 50% 20%, transparent 60%, rgba(0, 0, 0, 0.45) 100%);
   opacity: 0;
   transition: opacity 0.3s ease;
   pointer-events: none;
@@ -226,7 +226,7 @@ html.dark .bg-vignette {
   justify-content: center;
   font-size: 13px;
   font-weight: 700;
-  box-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 12px rgba(74, 222, 128, 0.4);
   border: none;
   cursor: pointer;
   transition: transform 0.15s ease;
@@ -239,8 +239,8 @@ html.dark .bg-vignette {
 
 /* Card hover glow extensions */
 .cyber-card:hover {
-  border-color: rgba(255, 0, 85, 0.3);
-  box-shadow: 0 15px 45px -12px rgba(255, 0, 85, 0.08);
+  border-color: rgba(74, 222, 128, 0.35);
+  box-shadow: 0 15px 45px -12px rgba(34, 197, 94, 0.12);
 }
 
 .stone-card {
@@ -248,8 +248,8 @@ html.dark .bg-vignette {
 }
 
 .stone-card:hover {
-  border-color: rgba(255, 0, 85, 0.4);
-  box-shadow: 0 15px 45px -12px rgba(255, 0, 85, 0.12);
+  border-color: rgba(74, 222, 128, 0.45);
+  box-shadow: 0 15px 45px -12px rgba(34, 197, 94, 0.16);
 }
 
 /* Custom Keyframe Animations */
@@ -361,7 +361,7 @@ html:not(.dark) .glow-blob {
   color: var(--text-main);
   background-color: var(--bg-hover);
   font-weight: 600;
-  border-left: 3px solid #FF0055;
+  border-left: 3px solid #22C55E;
   padding-left: 13px; /* account for border */
 }
 
@@ -434,7 +434,7 @@ html:not(.dark) .glow-blob {
 .premium-currency-btn.active {
   color: #FFFFFF;
   background: var(--color-accent);
-  box-shadow: 0 2px 8px rgba(255, 0, 85, 0.4);
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.4);
 }
 
 /* Premium Theme Toggle Button */
@@ -455,7 +455,7 @@ html:not(.dark) .glow-blob {
 .theme-toggle-btn:hover {
   color: var(--color-accent);
   border-color: var(--color-accent);
-  box-shadow: 0 0 10px rgba(255, 0, 85, 0.15);
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.2);
   transform: scale(1.05);
 }
 
@@ -468,7 +468,7 @@ html:not(.dark) .glow-blob {
   -webkit-appearance: none;
   width: 100%;
   height: 4px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(74, 222, 128, 0.15);
   outline: none;
   border-radius: 2px;
 }
@@ -479,9 +479,9 @@ html:not(.dark) .glow-blob {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: #FF0055;
+  background: #22C55E;
   cursor: pointer;
-  box-shadow: 0 0 8px #FF0055;
+  box-shadow: 0 0 8px #22C55E;
   transition: transform 0.1s ease;
 }
 
@@ -493,9 +493,9 @@ html:not(.dark) .glow-blob {
 .status-pulse-dot {
   width: 6px;
   height: 6px;
-  background-color: #10B981;
+  background-color: #4ADE80;
   border-radius: 50%;
-  box-shadow: 0 0 8px #10B981;
+  box-shadow: 0 0 8px #4ADE80;
   display: inline-block;
   animation: pulse-dot 2s infinite ease-in-out;
 }
@@ -669,19 +669,19 @@ html:not(.dark) .hover-scale:hover {
    Top-panel navigation: sliding pill, stagger entrance, icon morph
    ------------------------------------------------------------- */
 
-/* Floating glass nav bar (Wealthfolio-style rounded pill header) */
+/* Floating glass nav bar (rounded pill header) */
 .floating-nav {
   position: relative;
   background: var(--glass-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--glass-border);
-  box-shadow: 0 8px 32px -12px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 0, 85, 0.04);
+  box-shadow: 0 8px 32px -12px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(74, 222, 128, 0.10);
   transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 html:not(.dark) .floating-nav {
-  box-shadow: 0 8px 24px -12px rgba(15, 23, 42, 0.14);
+  box-shadow: 0 8px 24px -12px rgba(11, 36, 24, 0.14);
 }
 
 /* Accent hairline glowing along the bottom edge of the floating nav */
@@ -692,7 +692,7 @@ html:not(.dark) .floating-nav {
   right: 12%;
   bottom: -1px;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 0, 85, 0.35), transparent);
+  background: linear-gradient(90deg, transparent, rgba(74, 222, 128, 0.4), transparent);
   pointer-events: none;
 }
 
@@ -701,8 +701,8 @@ html:not(.dark) .floating-nav {
   position: absolute;
   top: 8px;
   bottom: 8px;
-  background: rgba(255, 0, 85, 0.10);
-  border: 1px solid rgba(255, 0, 85, 0.25);
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(74, 222, 128, 0.35);
   border-radius: 8px;
   pointer-events: none;
   transition: left 0.35s cubic-bezier(0.22, 1, 0.36, 1),
@@ -711,7 +711,7 @@ html:not(.dark) .floating-nav {
 }
 
 html:not(.dark) .top-tab-pill {
-  background: rgba(255, 0, 85, 0.06);
+  background: rgba(34, 197, 94, 0.08);
 }
 
 .scrollbar-none {
@@ -770,6 +770,33 @@ html:not(.dark) .top-tab-pill {
 
 .privacy-shutter-active {
   filter: blur(10px);
+}
+
+/* Scroll-driven reveal: cards fade + rise as they scroll into view.
+   Native CSS scroll timelines — no JS, no IntersectionObserver.
+   Animates `translate`, NOT `transform`, so the card-tilt handler in
+   Layout.astro (which writes inline `transform`) still composes on top.
+   ponytail: browsers without animation-timeline run this as a 0s animation
+   and land on the end state, so unsupported == no reveal, never invisible. */
+@keyframes revealUp {
+  from {
+    opacity: 0;
+    translate: 0 28px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .glow-card,
+  .stone-card,
+  .cyber-card {
+    animation: revealUp linear both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 20%;
+  }
 }
 
 /* Accessibility: collapse all decorative motion for users who opt out.

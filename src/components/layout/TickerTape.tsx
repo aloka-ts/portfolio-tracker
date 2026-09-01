@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown } from 'lucide-react';
+import { EXCHANGE_RATE, setExchangeRate } from '../../stores/portfolio';
 
 interface IndexInfo {
   name: string;
@@ -9,6 +10,7 @@ interface IndexInfo {
 
 export default function TickerTape() {
   const [indices, setIndices] = useState<IndexInfo[]>([
+    { name: 'USD / INR', price: 83.00, changePercent: 0 },
     { name: 'NIFTY 50', price: 22096.75, changePercent: 0.32 },
     { name: 'SENSEX', price: 72831.94, changePercent: 0.26 },
     { name: 'BANK NIFTY', price: 47000.00, changePercent: 0.15 },
@@ -21,11 +23,15 @@ export default function TickerTape() {
   useEffect(() => {
     const fetchIndexPrices = async () => {
       try {
-        const symbols = ['^NSEI', '^BSESN', '^NSEBANK', '^NDX', '^GSPC', 'NIFTY_LARGEMID250.NS'];
-        const res = await fetch(`/api/prices?symbols=${symbols.join(',')}&provider=yahoo`);
+        const symbols = ['USDINR=X', '^NSEI', '^BSESN', '^NSEBANK', '^NDX', '^GSPC', 'NIFTY_LARGEMID250.NS'];
+        const res = await fetch(`/api/prices?symbols=${symbols.map(encodeURIComponent).join(',')}&provider=yahoo`);
         if (res.ok) {
           const data = await res.json();
+          // Publish the FX rate app-wide: every USD↔INR conversion reads it.
+          const fx = data['USDINR=X']?.price;
+          if (fx) setExchangeRate(fx);
           setIndices([
+            { name: 'USD / INR', price: fx || EXCHANGE_RATE, changePercent: data['USDINR=X']?.change24h ?? 0 },
             { name: 'NIFTY 50', price: data['^NSEI']?.price || 22096.75, changePercent: data['^NSEI']?.change24h || 0.32 },
             { name: 'SENSEX', price: data['^BSESN']?.price || 72831.94, changePercent: data['^BSESN']?.change24h || 0.26 },
             { name: 'BANK NIFTY', price: data['^NSEBANK']?.price || 47000.00, changePercent: data['^NSEBANK']?.change24h || 0.15 },
@@ -51,7 +57,7 @@ export default function TickerTape() {
         {[...indices, ...indices, ...indices].map((idx, i) => {
           const isPositive = idx.changePercent >= 0;
           return (
-            <div key={i} className="ticker-card-item">
+            <div key={`${idx.name}-${i}`} className="ticker-card-item">
               <span className="text-slate-500 font-bold tracking-wider">{idx.name}</span>
               <span className="text-white font-semibold">
                 {idx.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}

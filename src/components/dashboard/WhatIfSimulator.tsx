@@ -69,8 +69,8 @@ function GoalPlanner({ startValue, settings }: { startValue: number; settings: U
           {
             label: 'Projected Value',
             data: series,
-            borderColor: '#FF0055',
-            backgroundColor: 'rgba(255, 0, 85, 0.05)',
+            borderColor: getCssVar('--color-accent', '#22C55E'),
+            backgroundColor: 'rgba(34, 197, 94, 0.08)',
             borderWidth: 2,
             pointRadius: 0,
             pointHitRadius: 8,

@@ -47,16 +47,16 @@ export function startPriceSubscription(portfolioStore: any) {
       activeUnsubscribe = null;
     }
 
+    // Extract unique tickers and always include USDINR=X for dynamic exchange rate updates
     const holdings = portfolioStore.get();
     const settings = settingsStore.get();
     
-    // Extract unique tickers
-    const tickers = Array.from(new Set(holdings.map(h => h.symbol.toUpperCase())))
-      .filter(t => t.trim().length > 0);
+    const assetTickers = holdings.map(h => h.symbol.toUpperCase()).filter(t => t.trim().length > 0);
+    const tickers = Array.from(new Set([...assetTickers, 'USDINR=X']));
     
     currentTickers = tickers;
     
-    if (tickers.length === 0) {
+    if (assetTickers.length === 0 && tickers.length === 1 && settings.provider === 'mock') {
       isPollingStore.set(false);
       return;
     }
@@ -72,6 +72,9 @@ export function startPriceSubscription(portfolioStore: any) {
         const currentPrices = { ...priceStore.get() };
         
         Object.entries(updates).forEach(([symbol, tick]) => {
+          if (symbol === 'USDINR=X' && typeof tick.price === 'number' && tick.price > 0) {
+            import('./portfolio').then(m => m.setExchangeRate(tick.price));
+          }
           const prevTick = currentPrices[symbol];
           currentPrices[symbol] = {
             symbol,

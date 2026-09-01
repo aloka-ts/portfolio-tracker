@@ -3,7 +3,8 @@ import { useStore } from '@nanostores/react';
 import { addTransaction, importHoldings, portfolioStore } from '../../stores/portfolio';
 import { settingsStore } from '../../stores/settings';
 import { parseSheetFile, mapRowsToHoldings } from '../../lib/parsing/sheetParser';
-import { AlertCircle, CheckCircle2, Upload, FileSpreadsheet, ArrowRight } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Upload, FileSpreadsheet, ArrowRight, Search } from 'lucide-react';
+import { TickerSearchModal, type TickerSearchResult } from './TickerSearchModal';
 
 interface TransactionFormProps {
   onSuccess?: () => void;
@@ -34,6 +35,16 @@ export default function TransactionForm({ onSuccess }: TransactionFormProps) {
   const [uploadError, setUploadError] = useState('');
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+
+  // Search modal state
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  const handleSelectTicker = (item: TickerSearchResult) => {
+    setTicker(item.ticker);
+    setName(item.name);
+    setCategory(item.category);
+    setMarket(item.market);
+  };
 
   // Auto-fill company name and market for popular tickers
   useEffect(() => {
@@ -259,9 +270,19 @@ export default function TransactionForm({ onSuccess }: TransactionFormProps) {
           {/* Ticker & Name */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-[10px] uppercase font-bold text-slate-400">
-                Ticker Symbol <span className="text-accent">*</span>
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="text-[10px] uppercase font-bold text-slate-400">
+                  Ticker Symbol <span className="text-accent">*</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setIsSearchOpen(true)}
+                  className="text-[10px] text-cyan-400 hover:text-cyan-300 flex items-center gap-1 font-semibold transition-colors"
+                >
+                  <Search size={11} />
+                  <span>Search Assets</span>
+                </button>
+              </div>
               <input
                 type="text"
                 placeholder="e.g. AAPL, RELIANCE.NS"
@@ -532,6 +553,12 @@ export default function TransactionForm({ onSuccess }: TransactionFormProps) {
           </p>
         </div>
       </div>
+
+      <TickerSearchModal
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        onSelect={handleSelectTicker}
+      />
 
     </div>
   );

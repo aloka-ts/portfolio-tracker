@@ -6,6 +6,41 @@ import React from 'react';
   import { formatCurrency, formatPercent, getFinancialColorClass } from '../../lib/utils/formatters';
   import { TrendingUp, TrendingDown, DollarSign, Wallet, ArrowUpRight } from 'lucide-react';
   
+  /**
+   * Entrance roll-up: a stat counts from 0 to its first real value, then tracks
+   * the live feed directly. Re-animating on every 5s price poll would leave the
+   * whole hero row permanently jittering, so it fires once. Interpolates from the
+   * currently displayed number, so a poll landing mid-roll continues instead of
+   * snapping back to 0. Values still render through formatCurrency (privacy mode).
+   */
+  function useCountUp(target: number, ms = 900) {
+    const [n, setN] = React.useState(0);
+    const shown = React.useRef(0);
+    const done = React.useRef(false);
+    shown.current = n;
+
+    React.useEffect(() => {
+      // target === 0 means the store hasn't hydrated from localStorage yet — wait
+      // for the first real number rather than burning the animation on zeroes.
+      if (done.current || target === 0 || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        if (target !== 0) done.current = true;
+        setN(target);
+        return;
+      }
+      const from = shown.current;
+      const t0 = performance.now();
+      let raf = requestAnimationFrame(function tick(t) {
+        const p = Math.min((t - t0) / ms, 1);
+        setN(from + (target - from) * (1 - Math.pow(1 - p, 3))); // ease-out cubic
+        if (p < 1) raf = requestAnimationFrame(tick);
+        else done.current = true;
+      });
+      return () => cancelAnimationFrame(raf);
+    }, [target]);
+
+    return n;
+  }
+
   export default function HeroStats() {
     const holdings = useStore(portfolioStore);
     const prices = useStore(priceStore);
@@ -132,6 +167,12 @@ import React from 'react';
   const isDayPnLPositive = totalDayPnL >= 0;
   const isTotalPnLPositive = totalPnL >= 0;
 
+  // Displayed (rolling) counterparts — colours/icons stay driven by the real values.
+  const rollCost = useCountUp(totalCost);
+  const rollValue = useCountUp(totalValue);
+  const rollPnL = useCountUp(totalPnL);
+  const rollDayPnL = useCountUp(totalDayPnL);
+
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 w-full">
       {/* 1. Total Invested Value */}
@@ -139,8 +180,8 @@ import React from 'react';
         <div className="glow-card-inner h-full flex flex-col justify-between">
           <div className="space-y-1">
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Total Invested</span>
-            <span className="text-xl md:text-2xl font-extrabold text-white tracking-tight block">
-              {formatCurrency(totalCost, settings.currency, settings.decimals)}
+            <span className="text-xl md:text-2xl font-extrabold text-white tracking-tight block font-mono-nums">
+              {formatCurrency(rollCost, settings.currency, settings.decimals)}
             </span>
           </div>
           
@@ -159,7 +200,7 @@ import React from 'react';
             <path
               d={renderSparklinePath(portfolioSparkline)}
               fill="none"
-              stroke={isDayPnLPositive ? '#10B981' : '#FF0055'}
+              stroke={isDayPnLPositive ? '#4ADE80' : '#F87171'}
               strokeWidth="2"
             />
           </svg>
@@ -168,8 +209,8 @@ import React from 'react';
         <div className="glow-card-inner h-full flex flex-col justify-between">
           <div className="space-y-1">
             <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider block">Present Value</span>
-            <span className="text-xl md:text-2xl font-extrabold text-white tracking-tight block">
-              {formatCurrency(totalValue, settings.currency, settings.decimals)}
+            <span className="text-xl md:text-2xl font-extrabold text-white tracking-tight block font-mono-nums">
+              {formatCurrency(rollValue, settings.currency, settings.decimals)}
             </span>
           </div>
           
@@ -189,8 +230,8 @@ import React from 'react';
         <div className="glow-card-inner h-full flex flex-col justify-between">
           <div className="space-y-1">
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Total Return</span>
-            <span className={`text-lg md:text-xl font-bold tracking-tight block ${getFinancialColorClass(totalPnL, settings.colorblind)}`}>
-              {formatCurrency(totalPnL, settings.currency, settings.decimals)}
+            <span className={`text-lg md:text-xl font-bold tracking-tight block font-mono-nums ${getFinancialColorClass(totalPnL, settings.colorblind)}`}>
+              {formatCurrency(rollPnL, settings.currency, settings.decimals)}
             </span>
           </div>
 
@@ -212,8 +253,8 @@ import React from 'react';
         <div className="glow-card-inner h-full flex flex-col justify-between">
           <div className="space-y-1">
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Day's Return</span>
-            <span className={`text-lg md:text-xl font-bold tracking-tight block ${getFinancialColorClass(totalDayPnL, settings.colorblind)}`}>
-              {formatCurrency(totalDayPnL, settings.currency, settings.decimals)}
+            <span className={`text-lg md:text-xl font-bold tracking-tight block font-mono-nums ${getFinancialColorClass(totalDayPnL, settings.colorblind)}`}>
+              {formatCurrency(rollDayPnL, settings.currency, settings.decimals)}
             </span>
           </div>
 

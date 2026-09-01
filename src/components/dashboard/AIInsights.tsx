@@ -168,9 +168,9 @@ export default function AIInsights() {
       </div>
 
       <div className="flex-1 overflow-y-auto space-y-3 pr-1 max-h-[300px] md:max-h-none">
-        {insights.map(item => (
+        {insights.map((item, idx) => (
           <div 
-            key={item.id}
+            key={`${item.id}-${idx}`}
             className={`p-3 border rounded-lg flex items-start space-x-2.5 transition duration-150 hover:bg-white/[0.02] ${getBorderColorClass(item.severity)}`}
           >
             {getInsightIcon(item.type)}

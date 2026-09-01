@@ -4,6 +4,7 @@ import { portfolioStore, transactionsStore, EXCHANGE_RATE, cashBalancesStore } f
 import { priceStore } from '../../stores/prices';
 import { settingsStore } from '../../stores/settings';
 import { formatCurrency, formatPercent } from '../../lib/utils/formatters';
+import { getCssVar } from '../../lib/theme';
 import { Scale, ArrowRight, RefreshCw, Sparkles } from 'lucide-react';
 import Chart from 'chart.js/auto';
 
@@ -144,7 +145,8 @@ export default function RebalancingAssistant() {
         const chartA = Chart.getChart(chartAfterRef.current);
         if (chartA) chartA.destroy();
 
-        const colors = ['#5f5af7', '#08b6d4', '#ec4899', '#f59e0b', '#10b981'];
+        const colors = ['#22C55E', '#10B981', '#EAB308', '#34D399', '#14B8A6'];
+        const cardBg = getCssVar('--bg-card', '#11291D');
 
         new Chart(ctxBefore, {
           type: 'doughnut',
@@ -154,7 +156,7 @@ export default function RebalancingAssistant() {
               data: currentPcts,
               backgroundColor: colors,
               borderWidth: 1,
-              borderColor: '#0E1015'
+              borderColor: cardBg
             }]
           },
           options: {
@@ -175,7 +177,7 @@ export default function RebalancingAssistant() {
               data: targetPcts,
               backgroundColor: colors,
               borderWidth: 1,
-              borderColor: '#0E1015'
+              borderColor: cardBg
             }]
           },
           options: {

@@ -3,7 +3,30 @@ import type { Holding, Transaction } from '../types';
 import { priceStore } from './prices';
 
 const isBrowser = typeof window !== 'undefined';
-export const EXCHANGE_RATE = 83.0; // USD to INR exchange rate
+
+/**
+ * Live USD→INR rate, refreshed from the USDINR=X quote by TickerTape.
+ *
+ * ponytail: a mutable ESM live binding rather than a nanostore, so the ~40
+ * existing `EXCHANGE_RATE` call sites keep working untouched — every component
+ * that converts currency already re-renders on the 5s price poll, so it reads
+ * the fresh value without a single useStore() edit. Last known rate is cached so
+ * a reload converts correctly before the first quote lands; 83 is only the
+ * cold-start fallback for a browser that has never fetched a rate.
+ */
+export let EXCHANGE_RATE = 83.0;
+
+if (isBrowser) {
+  const cached = Number(localStorage.getItem('fx_usd_inr'));
+  if (cached > 0) EXCHANGE_RATE = cached;
+}
+
+export function setExchangeRate(rate: number) {
+  // Guard the trust boundary: a scraper miss must not zero out every INR figure.
+  if (!Number.isFinite(rate) || rate <= 0) return;
+  EXCHANGE_RATE = rate;
+  if (isBrowser) localStorage.setItem('fx_usd_inr', String(rate));
+}
 
 export const SEED_TRANSACTIONS: Transaction[] = [
   { id: 'tx-seed-1', ticker: 'AAPL', type: 'BUY', quantity: 25, price: 175.50, fees: 5, date: '2026-01-15', market: 'US', platform: 'Groww', category: 'Stocks' },
@@ -154,7 +177,7 @@ export function recalculatePortfolio(txs: Transaction[]) {
   let cashUSD = isSeed ? 50000 : 0;
   let cashINR = isSeed ? 1000000 : 0;
 
-  const currentPrices = { ...priceStore.get() };
+  const currentPrices = (priceStore && typeof priceStore.get === 'function') ? { ...priceStore.get() } : {};
   let pricesChanged = false;
 
   for (const tx of sortedTxs) {
@@ -263,7 +286,7 @@ export function recalculatePortfolio(txs: Transaction[]) {
   portfolioStore.set(finalHoldings);
   cashBalancesStore.set({ USD: cashUSD, INR: cashINR });
   
-  if (pricesChanged) {
+  if (pricesChanged && priceStore && typeof priceStore.set === 'function') {
     priceStore.set(currentPrices);
   }
 

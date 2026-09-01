@@ -16,8 +16,9 @@ function debugLog(message: string) {
   if (DEBUG_SCRAPE) console.error(`[prices] ${message}`);
 }
 
-// Whitelist ticker charset ('.NS', '^NSEI', 'BTC-USD', 'GVT&D.NS', MUTF codes)
-const SYMBOL_RE = /^[A-Za-z0-9.^:&_-]{1,25}$/;
+// Whitelist ticker charset ('.NS', '^NSEI', 'BTC-USD', 'GVT&D.NS', MUTF codes,
+// 'USDINR=X' FX pairs)
+const SYMBOL_RE = /^[A-Za-z0-9.^:&_=-]{1,25}$/;
 
 // Bare crypto tickers (e.g. BTC) must be quoted as a USD pair (BTC-USD), or the
 // scrapers resolve them to an unrelated equity and return a junk price.
@@ -28,6 +29,10 @@ function isCrypto(symbol: string): boolean {
 
 function isIndianStock(symbol: string): boolean {
   const s = symbol.toUpperCase().trim();
+  // Yahoo FX pairs ('USDINR=X') are not equities — both the Yahoo '.NS' and the
+  // Google ':NSE' suffixing below gate on this, so excluding them here keeps the
+  // pair intact on either provider path.
+  if (s.endsWith('=X')) return false;
   const usSymbols = new Set(['AAPL', 'TSLA', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'META', 'NFLX', 'BTC', 'ETH', 'USDT', 'USDC', 'BNB', 'SOL', 'XRP', 'ADA', 'DOGE', 'MATIC']);
   return !usSymbols.has(s);
 }

@@ -38,7 +38,7 @@ export function getChartPalette(colorblind = false): string[] {
   if (!isBrowser) return COLORBLIND_PALETTE;
   const style = getComputedStyle(document.documentElement);
   return Array.from({ length: 8 }, (_, i) =>
-    style.getPropertyValue(`--chart-${i + 1}`).trim() || '#FF0055'
+    style.getPropertyValue(`--chart-${i + 1}`).trim() || '#22C55E'
   );
 }
 

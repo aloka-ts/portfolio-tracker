@@ -7,6 +7,7 @@ import { formatCurrency, formatPercent } from '../../lib/utils/formatters';
 import { themeTickStore, getChartPalette, getCssVar } from '../../lib/theme';
 import { BarChart3, TrendingUp, TrendingDown, ShieldAlert, Coins, Globe, Landmark } from 'lucide-react';
 import Chart from 'chart.js/auto';
+import { TaxInsightsCard } from './TaxInsightsCard';
 
 // Benchmark indices for the trend chart overlay
 const BENCHMARKS: Record<string, string> = {
@@ -398,26 +399,26 @@ export default function AnalyticsTab() {
         if (existing) existing.destroy();
 
         const isDark = document.documentElement.classList.contains('dark');
-        const gridColor = isDark ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)';
-        const textColor = isDark ? '#94A3B8' : '#475569';
+        const gridColor = isDark ? 'rgba(74, 222, 128, 0.06)' : 'rgba(0, 0, 0, 0.04)';
+        const textColor = isDark ? '#86EFAC' : '#3D6652';
 
         const strokeGradient = ctx.createLinearGradient(0, 0, ctx.canvas.width || 600, 0);
-        strokeGradient.addColorStop(0, '#06B6D4'); // cyan
-        strokeGradient.addColorStop(0.5, '#3B82F6'); // blue
-        strokeGradient.addColorStop(1, '#EC4899'); // pink-red
+        strokeGradient.addColorStop(0, '#22C55E'); // emerald leaf
+        strokeGradient.addColorStop(0.5, '#10B981'); // jade mint
+        strokeGradient.addColorStop(1, '#EAB308'); // warm gold
 
         const fillGradient = ctx.createLinearGradient(0, 0, 0, 220);
-        fillGradient.addColorStop(0, isDark ? 'rgba(6, 182, 212, 0.12)' : 'rgba(6, 182, 212, 0.18)');
-        fillGradient.addColorStop(1, 'rgba(6, 182, 212, 0.0)');
+        fillGradient.addColorStop(0, isDark ? 'rgba(34, 197, 94, 0.16)' : 'rgba(34, 197, 94, 0.18)');
+        fillGradient.addColorStop(1, 'rgba(34, 197, 94, 0.0)');
 
         const datasets: any[] = [{
           label: 'Portfolio Holdings Value',
           data: trendData,
           borderColor: strokeGradient,
           borderWidth: 2.5,
-          pointBackgroundColor: '#06B6D4',
-          pointBorderColor: isDark ? '#0E1015' : '#FFFFFF',
-          pointHoverBackgroundColor: '#EC4899',
+          pointBackgroundColor: '#22C55E',
+          pointBorderColor: isDark ? '#11291D' : '#FFFFFF',
+          pointHoverBackgroundColor: '#4ADE80',
           pointHoverBorderColor: '#FFFFFF',
           pointHoverRadius: 5,
           pointHoverBorderWidth: 1.5,
@@ -462,10 +463,10 @@ export default function AnalyticsTab() {
                 enabled: true,
                 mode: 'index',
                 intersect: false,
-                backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
-                titleColor: isDark ? '#FFFFFF' : '#0F172A',
-                bodyColor: isDark ? '#94A3B8' : '#475569',
-                borderColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.08)',
+                backgroundColor: isDark ? '#11291D' : '#FFFFFF',
+                titleColor: isDark ? '#F0FDF4' : '#0B2418',
+                bodyColor: isDark ? '#86EFAC' : '#3D6652',
+                borderColor: isDark ? 'rgba(74, 222, 128, 0.2)' : 'rgba(11, 36, 24, 0.08)',
                 borderWidth: 1,
                 padding: 10,
                 displayColors: false,
@@ -547,7 +548,7 @@ export default function AnalyticsTab() {
               data: Object.values(categoryValues),
               backgroundColor: getChartPalette(settings.colorblind).slice(0, Object.keys(categoryValues).length),
               borderWidth: 1,
-              borderColor: getCssVar('--bg-card', '#0E1015')
+              borderColor: getCssVar('--bg-card', '#11291D')
             }]
           },
           options: {
@@ -841,6 +842,9 @@ export default function AnalyticsTab() {
           </div>
         </div>
       </div>
+
+      {/* Tax Insights & Capital Gains Estimator */}
+      <TaxInsightsCard />
     </div>
   );
 }
